@@ -1,3 +1,4 @@
+alert("APP JS UPDATED");
 const cycle = 90;
 const latency = 15;
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = "sleep-cycle-v2";
+const CACHE_NAME = "sleep-cycle-v3";
 
 const FILES = [
   "./",
@@ -26,7 +26,5 @@ self.addEventListener("activate", e => {
 });
 
 self.addEventListener("fetch", e => {
-  e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
-  );
+  e.respondWith(fetch(e.request));
 });
