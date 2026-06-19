@@ -193,3 +193,21 @@ button.secondary{
     transform:scale(0.9);
     stroke:#fff;
 }
+
+.navbar button{
+    color:#aaa;
+}
+
+.icon{
+    width:22px;
+    height:22px;
+    stroke:#aaa;
+    fill:none;
+    transition:0.2s;
+}
+
+/* quand on appuie */
+.navbar button:active .icon{
+    stroke:#fff;
+    transform:scale(0.95);
+}
