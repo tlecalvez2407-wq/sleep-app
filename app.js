@@ -163,24 +163,42 @@ setInterval(()=>{
     }
 },60000);
 
+let currentView = "home";
+
 function switchView(view){
 
-    document.getElementById("homeView").classList.remove("active");
-    document.getElementById("statsView").classList.remove("active");
-    document.getElementById("historyView").classList.remove("active");
+    const views = document.querySelectorAll(".view");
 
-    if(view === "home"){
-        document.getElementById("homeView").classList.add("active");
-    }
-    if(view === "stats"){
-        document.getElementById("statsView").classList.add("active");
-    }
-    if(view === "history"){
-        document.getElementById("historyView").classList.add("active");
+    views.forEach(v => {
+        v.classList.remove("active");
+    });
+
+    const next = document.getElementById(view + "View");
+
+    // direction animation
+    if(view !== currentView){
+
+        if(view === "home"){
+            next.style.transform = "translateX(-20px)";
+        }
+
+        if(view === "stats"){
+            next.style.transform = "translateX(20px)";
+        }
+
+        if(view === "history"){
+            next.style.transform = "translateX(20px)";
+        }
     }
 
-    updateNav(view);
+    // force reflow (important pour animation)
+    void next.offsetWidth;
 
+    next.classList.add("active");
+
+    currentView = view;
+
+    // navbar update si tu l'as
     moveIndicator(view);
 }
 
