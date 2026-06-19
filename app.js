@@ -178,4 +178,27 @@ function switchView(view){
     if(view === "history"){
         document.getElementById("historyView").classList.add("active");
     }
+
+    updateNav(view);
 }
+
+function updateNav(active){
+
+    const buttons = document.querySelectorAll(".navbar button");
+
+    buttons.forEach(btn => btn.classList.remove("active"));
+
+    if(active === "home"){
+        buttons[0].classList.add("active");
+    }
+    if(active === "stats"){
+        buttons[1].classList.add("active");
+    }
+    if(active === "history"){
+        buttons[2].classList.add("active");
+    }
+}
+
+window.addEventListener("load", () => {
+    updateNav("home");
+});

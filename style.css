@@ -181,3 +181,26 @@ button.secondary{
     stroke:#fff;
     transform:scale(0.95);
 }
+
+.navbar button{
+    transition: 0.2s;
+}
+
+.icon{
+    width:24px;
+    height:24px;
+    stroke:#8a8a8a; /* gris Samsung */
+    fill:none;
+    transition:0.2s;
+}
+
+/* état actif */
+.navbar button.active .icon{
+    stroke:#ffffff;
+    transform:scale(1.1);
+}
+
+/* clic feedback */
+.navbar button:active .icon{
+    transform:scale(0.9);
+}
