@@ -180,6 +180,8 @@ function switchView(view){
     }
 
     updateNav(view);
+
+    moveIndicator(view);
 }
 
 function updateNav(active){
@@ -196,3 +198,20 @@ function updateNav(active){
 window.addEventListener("load", () => {
     updateNav("home");
 });
+
+function moveIndicator(view){
+
+    const indicator = document.querySelector(".nav-indicator");
+
+    if(view === "home"){
+        indicator.style.transform = "translateX(0%)";
+    }
+
+    if(view === "stats"){
+        indicator.style.transform = "translateX(100%)";
+    }
+
+    if(view === "history"){
+        indicator.style.transform = "translateX(200%)";
+    }
+}
