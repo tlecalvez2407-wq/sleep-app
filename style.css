@@ -1,0 +1,66 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:system-ui, sans-serif;
+    background:#000;
+    color:#fff;
+    display:flex;
+    justify-content:center;
+    padding:20px;
+    overflow-x:hidden;
+}
+
+.container{
+    width:100%;
+    max-width:420px;
+}
+
+h1{
+    text-align:center;
+}
+
+.card{
+    background:#111;
+    border-radius:20px;
+    padding:20px;
+    margin-top:20px;
+}
+
+input,
+button{
+    display:block;
+    width:100%;
+    padding:15px;
+    margin-top:10px;
+    border-radius:12px;
+    border:none;
+    font-size:16px;
+}
+
+button{
+    background:#4f8cff;
+    color:white;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(0.98);
+}
+
+.timer{
+    font-size:20px;
+    margin-top:15px;
+    text-align:center;
+    color:#4f8cff;
+}
+
+.small{
+    font-size:12px;
+    color:#aaa;
+    text-align:center;
+    margin-top:10px;
+}
