@@ -2,12 +2,29 @@ const cycle = 90;
 const latency = 15;
 
 let targetTime = null;
+let timerInterval = null;
 
 function format(d){
-return d.toTimeString().slice(0,5);
+    return d.toTimeString().slice(0,5);
 }
 
+function clearTimer(){
+    targetTime = null;
+    document.getElementById("timer").innerText = "";
+
+    if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+/* =========================
+   CALCUL HEURES DE COUCHER
+========================= */
 function calc() {
+
+    clearTimer();
+
     const wake = document.getElementById("wake").value;
     if (!wake) return;
 
@@ -16,11 +33,15 @@ function calc() {
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = "";
 
-    const cycle = 90 + 15; // 105 min
-    const options = [6, 5, 4, 3]; // cycles
+    const options = [6, 5, 4, 3];
+
+    let good = [];
+    let medium = [];
+    let bad = [];
 
     options.forEach(cycles => {
-        let totalMinutes = cycles * cycle;
+
+        let totalMinutes = cycles * (cycle + latency);
 
         let wakeDate = new Date();
         wakeDate.setHours(h);
@@ -31,111 +52,135 @@ function calc() {
         let hours = sleepTime.getHours().toString().padStart(2, "0");
         let minutes = sleepTime.getMinutes().toString().padStart(2, "0");
 
-        let qualityClass = "";
-        let label = "";
-
-        if (cycles === 6) {
-            qualityClass = "good";
-            label = "Optimal";
-        } else if (cycles === 4) {
-            qualityClass = "medium";
-            label = "Correct";
-        } else {
-            qualityClass = "bad";
-            label = "Court";
-        }
-
-        const card = document.createElement("div");
-        card.className = `result-card ${qualityClass}`;
-
-        card.innerHTML = `
-            <div>
-                <div class="result-time">${hours}:${minutes}</div>
-                <div class="result-info">${cycles} cycles • ${label}</div>
+        let obj = {
+            html: `
+            <div class="result-card">
+                <div>
+                    <div class="result-time">${hours}:${minutes}</div>
+                    <div class="result-info">${cycles} cycles • ${(cycles*1.5).toFixed(1)}h</div>
+                </div>
             </div>
-        `;
+            `
+        };
 
-        resultsDiv.appendChild(card);
+        if(cycles === 6){
+            good.push(obj);
+        }
+        else if(cycles === 5){
+            good.push(obj);
+        }
+        else if(cycles === 4){
+            medium.push(obj);
+        }
+        else{
+            bad.push(obj);
+        }
     });
+
+    resultsDiv.innerHTML =
+        good.map(x => x.html).join("") +
+        medium.map(x => x.html).join("") +
+        bad.map(x => x.html).join("");
 }
 
+/* =========================
+   MODE "JE VAIS DORMIR"
+========================= */
 function sleepNow(){
 
-const now = new Date();
+    clearTimer();
 
-const results = document.getElementById("results");
-results.innerHTML = "";
+    const now = new Date();
+    const results = document.getElementById("results");
+    results.innerHTML = "";
 
-const cycles = [3,4,5,6];
+    const cycles = [6,5,4,3];
 
-cycles.forEach((c,i)=>{
+    let good = [];
+    let medium = [];
+    let bad = [];
 
-const t = new Date(now.getTime() + ((c*cycle+latency)*60000));
+    cycles.forEach((c,i)=>{
 
-let cls = "";
+        const t = new Date(now.getTime() + ((c*(cycle+latency))*60000));
 
-if(c >= 5){
-    cls = "good";
+        let hours = t.getHours().toString().padStart(2,"0");
+        let minutes = t.getMinutes().toString().padStart(2,"0");
+
+        let html = `
+        <div class="result-card">
+            <div>
+                <div class="result-time">${hours}:${minutes}</div>
+                <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
+            </div>
+        </div>
+        `;
+
+        if(c === 6 || c === 5){
+            good.push(html);
+        }
+        else if(c === 4){
+            medium.push(html);
+        }
+        else{
+            bad.push(html);
+        }
+
+        if(i === 1) targetTime = t;
+    });
+
+    results.innerHTML =
+        good.join("") +
+        medium.join("") +
+        bad.join("");
+
+    startTimer();
+    notifyPermission();
 }
-else if(c === 4){
-    cls = "medium";
-}
-else{
-    cls = "bad";
-}
 
-const hours = t.getHours().toString().padStart(2,"0");
-const minutes = t.getMinutes().toString().padStart(2,"0");
-
-results.innerHTML += `
-<div class="result-card ${cls}">
-    <div>
-        <div class="result-time">${hours}:${minutes}</div>
-        <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
-    </div>
-</div>
-`;
-
-if(i===1) targetTime = t;
-
-});
-
-startTimer();
-notifyPermission();
-}
-
+/* =========================
+   TIMER
+========================= */
 function startTimer(){
-setInterval(()=>{
 
-if(!targetTime) return;
+    if(timerInterval){
+        clearInterval(timerInterval);
+    }
 
-const diff = targetTime - new Date();
+    timerInterval = setInterval(()=>{
 
-if(diff <= 0){
-document.getElementById("timer").innerText = "🔥 C'est l'heure !";
-return;
+        if(!targetTime) return;
+
+        const diff = targetTime - new Date();
+
+        if(diff <= 0){
+            document.getElementById("timer").innerText = "🔥 C'est l'heure !";
+            return;
+        }
+
+        const h = Math.floor(diff/3600000);
+        const m = Math.floor(diff%3600000/60000);
+        const s = Math.floor(diff%60000/1000);
+
+        document.getElementById("timer").innerText =
+        `⏳ ${h}h ${m}m ${s}s`;
+
+    },1000);
 }
 
-const h = Math.floor(diff/3600000);
-const m = Math.floor(diff%3600000/60000);
-const s = Math.floor(diff%60000/1000);
-
-document.getElementById("timer").innerText =
-`⏳ ${h}h ${m}m ${s}s`;
-
-},1000);
-}
-
+/* =========================
+   NOTIFICATIONS
+========================= */
 function notifyPermission(){
-if(Notification.permission !== "granted"){
-Notification.requestPermission();
-}
+    if(Notification.permission !== "granted"){
+        Notification.requestPermission();
+    }
 }
 
 setInterval(()=>{
-if(targetTime && new Date() >= targetTime){
-new Notification("Sleep Cycle 😴",{
-body:"C'est le moment de dormir"
-});
-}
+    if(targetTime && new Date() >= targetTime){
+        new Notification("Sleep Cycle 😴",{
+            body:"C'est le moment de dormir"
+        });
+    }
 },60000);
