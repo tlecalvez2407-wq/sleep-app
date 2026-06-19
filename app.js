@@ -1,3 +1,4 @@
+console.log("APP VERSION HISTORIQUE");
 const cycle = 90;
 const latency = 15;
 
@@ -37,6 +38,7 @@ function loadHistory(){
     });
 }
 
+console.log("Sauvegarde historique");
 function saveHistory(time, cycles, cls){
 
     const history = JSON.parse(
@@ -326,3 +328,14 @@ window.addEventListener("load", ()=>{
 
     loadHistory();
 });
+
+function clearHistory(){
+
+    if(!confirm("Supprimer tout l'historique ?")){
+        return;
+    }
+
+    localStorage.removeItem("sleepHistory");
+
+    loadHistory();
+}
