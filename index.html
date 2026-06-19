@@ -16,81 +16,50 @@
 
 <body>
 
-<div class="container">
+<div class="app">
 
-<!-- VUE HOME -->
+<!-- HOME -->
 <div id="homeView" class="view active">
+    <div class="card">
+        <h1>Sleep Cycle</h1>
+        <p class="subtitle">Optimisation du sommeil</p>
 
-<header class="header">
-    <h1>Sleep Cycle</h1>
-    <p class="subtitle">Analyse de ton rythme de sommeil</p>
-</header>
+        <label>Heure de réveil</label>
+        <input type="time" id="wake">
 
-<div class="card">
+        <button onclick="calc()">Calculer les heures</button>
+        <button class="secondary" onclick="sleepNow()">Je vais dormir maintenant</button>
 
-<label for="wake">Heure de réveil</label>
-<input type="time" id="wake">
+        <div class="timer" id="timer"></div>
 
-<button onclick="calc()">Calculer les heures de coucher</button>
-<button class="secondary" onclick="sleepNow()">Je vais dormir maintenant</button>
-
-<div class="timer" id="timer"></div>
-
-<div id="results" class="results"></div>
-
-<p class="info">
-Cycles de sommeil de 90 minutes + 15 minutes d’endormissement
-</p>
-
+        <div id="results"></div>
+    </div>
 </div>
 
-</div>
-
-<!-- VUE STATS -->
+<!-- STATS -->
 <div id="statsView" class="view">
     <div class="card">
         <h2>Stats</h2>
-        <p>Bientôt : score de sommeil + analyse</p>
+        <p>À venir : analyse de ton sommeil</p>
     </div>
 </div>
 
-<!-- VUE HISTORIQUE -->
+<!-- HISTORY -->
 <div id="historyView" class="view">
     <div class="card">
         <h2>Historique</h2>
-        <p>Bientôt : tes nuits enregistrées</p>
+        <p>À venir : tes nuits enregistrées</p>
     </div>
 </div>
 
 </div>
 
-<!-- NAV BAR -->
+<!-- NAVBAR -->
 <div class="navbar">
 
-    <button onclick="switchView('home')">
-        <svg viewBox="0 0 24 24" class="icon">
-            <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5z"
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </button>
-
-    <button onclick="switchView('stats')">
-        <svg viewBox="0 0 24 24" class="icon">
-            <path d="M4 19V5m6 14V9m6 10V3m6 16V11"
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </button>
-
-    <button onclick="switchView('history')">
-        <svg viewBox="0 0 24 24" class="icon">
-            <path d="M12 8v5l3 2m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"
-            stroke="currentColor" stroke-width="2" fill="none"/>
-        </svg>
-    </button>
-
-    <div class="nav-indicator"></div>
-
-</div>
+<button onclick="switchView('home')">🏠</button>
+<button onclick="switchView('stats')">📊</button>
+<button onclick="switchView('history')">🕒</button>
 
 </div>
 

@@ -1,217 +1,119 @@
-console.log("VERSION 2026 - APP JS CHARGE");
+console.log("Sleep app loaded");
+
 const cycle = 90;
 const latency = 15;
 
 let targetTime = null;
 let timerInterval = null;
 
-function format(d){
-    return d.toTimeString().slice(0,5);
+/* NAVIGATION */
+function switchView(view){
+
+    document.querySelectorAll(".view").forEach(v=>{
+        v.classList.remove("active");
+    });
+
+    document.getElementById(view+"View").classList.add("active");
+
+    document.querySelectorAll(".navbar button").forEach(b=>{
+        b.classList.remove("active");
+    });
+
+    if(view === "home") document.querySelectorAll(".navbar button")[0].classList.add("active");
+    if(view === "stats") document.querySelectorAll(".navbar button")[1].classList.add("active");
+    if(view === "history") document.querySelectorAll(".navbar button")[2].classList.add("active");
 }
 
+/* RESET TIMER */
 function clearTimer(){
     targetTime = null;
+    if(timerInterval) clearInterval(timerInterval);
     document.getElementById("timer").innerText = "";
-
-    if(timerInterval){
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
 }
 
-/* =========================
-   CALCUL HEURES DE COUCHER
-========================= */
-function calc() {
+/* CALCUL HEURES */
+function calc(){
 
     clearTimer();
 
     const wake = document.getElementById("wake").value;
-    if (!wake) return;
+    if(!wake) return;
 
-    const [h, m] = wake.split(":").map(Number);
+    const [h,m] = wake.split(":").map(Number);
 
-    const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "";
+    const res = document.getElementById("results");
+    res.innerHTML = "";
 
-    const options = [6, 5, 4, 3];
+    [6,5,4,3].forEach(cycles=>{
 
-    let results = [];
+        let total = cycles * (cycle + latency);
 
-    options.forEach(cycles => {
+        let base = new Date();
+        base.setHours(h,m);
 
-        let totalMinutes = cycles * (cycle + latency);
+        let sleep = new Date(base.getTime() - total*60000);
 
-        let wakeDate = new Date();
-        wakeDate.setHours(h);
-        wakeDate.setMinutes(m);
+        let cls = cycles >= 5 ? "good" : cycles === 4 ? "medium" : "bad";
 
-        let sleepTime = new Date(wakeDate.getTime() - totalMinutes * 60000);
-
-        let hours = sleepTime.getHours().toString().padStart(2, "0");
-        let minutes = sleepTime.getMinutes().toString().padStart(2, "0");
-
-        let cls = "";
-
-        if (cycles === 6 || cycles === 5) cls = "good";
-        else if (cycles === 4) cls = "medium";
-        else cls = "bad";
-
-        results.push(`
-            <div class="result-card ${cls}">
-                <div>
-                    <div class="result-time">${hours}:${minutes}</div>
-                    <div class="result-info">${cycles} cycles • ${(cycles*1.5).toFixed(1)}h</div>
-                </div>
-            </div>
-        `);
+        res.innerHTML += `
+        <div class="result ${cls}">
+            ${sleep.getHours().toString().padStart(2,"0")}:
+            ${sleep.getMinutes().toString().padStart(2,"0")}
+            — ${cycles} cycles
+        </div>`;
     });
-
-    resultsDiv.innerHTML = results.join("");
 }
 
-/* =========================
-   MODE "JE VAIS DORMIR"
-========================= */
+/* MODE DODO */
 function sleepNow(){
 
     clearTimer();
 
     const now = new Date();
-    const results = document.getElementById("results");
-    results.innerHTML = "";
+    const res = document.getElementById("results");
+    res.innerHTML = "";
 
-    const cycles = [6,5,4,3];
+    [6,5,4,3].forEach((c,i)=>{
 
-    let output = [];
+        let t = new Date(now.getTime() + c*(cycle+latency)*60000);
 
-    cycles.forEach((c,i)=>{
+        let cls = c >= 5 ? "good" : c === 4 ? "medium" : "bad";
 
-        const t = new Date(now.getTime() + ((c*(cycle+latency))*60000));
-
-        let hours = t.getHours().toString().padStart(2,"0");
-        let minutes = t.getMinutes().toString().padStart(2,"0");
-
-        let cls = "";
-
-        if(c === 6 || c === 5) cls = "good";
-        else if(c === 4) cls = "medium";
-        else cls = "bad";
-
-        output.push(`
-            <div class="result-card ${cls}">
-                <div>
-                    <div class="result-time">${hours}:${minutes}</div>
-                    <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
-                </div>
-            </div>
-        `);
+        res.innerHTML += `
+        <div class="result ${cls}">
+            ${t.getHours().toString().padStart(2,"0")}:
+            ${t.getMinutes().toString().padStart(2,"0")}
+            — ${c} cycles
+        </div>`;
 
         if(i === 1) targetTime = t;
     });
 
-    results.innerHTML = output.join("");
-
     startTimer();
-    notifyPermission();
 }
 
-/* =========================
-   TIMER
-========================= */
+/* TIMER */
 function startTimer(){
 
-    if(timerInterval){
-        clearInterval(timerInterval);
-    }
+    if(timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(()=>{
 
         if(!targetTime) return;
 
-        const diff = targetTime - new Date();
+        let diff = targetTime - new Date();
 
         if(diff <= 0){
-            document.getElementById("timer").innerText = "🔥 C'est l'heure !";
+            document.getElementById("timer").innerText = "🔥 C'est l'heure de dormir";
             return;
         }
 
-        const h = Math.floor(diff/3600000);
-        const m = Math.floor(diff%3600000/60000);
-        const s = Math.floor(diff%60000/1000);
+        let h = Math.floor(diff/3600000);
+        let m = Math.floor(diff%3600000/60000);
+        let s = Math.floor(diff%60000/1000);
 
         document.getElementById("timer").innerText =
-        `⏳ ${h}h ${m}m ${s}s`;
+        `${h}h ${m}m ${s}s`;
 
     },1000);
 }
-
-/* =========================
-   NOTIFICATIONS
-========================= */
-function notifyPermission(){
-    if(Notification.permission !== "granted"){
-        Notification.requestPermission();
-    }
-}
-
-setInterval(()=>{
-    if(targetTime && new Date() >= targetTime){
-        new Notification("Sleep Cycle 😴",{
-            body:"C'est le moment de dormir"
-        });
-    }
-},60000);
-
-let currentView = "home";
-
-function switchView(view){
-
-    const views = document.querySelectorAll(".view");
-
-    views.forEach(v => {
-        v.classList.remove("active");
-        v.style.transform = "";
-    });
-
-    const next = document.getElementById(view + "View");
-
-    // reset animation
-    next.style.transition = "none";
-    next.style.transform = "translateX(20px)";
-
-    void next.offsetWidth;
-
-    next.style.transition = "0.35s ease";
-    next.classList.add("active");
-
-    currentView = view;
-
-    updateNav(view);
-    moveIndicator(view);
-}
-
-function updateNav(active){
-
-    const buttons = document.querySelectorAll(".navbar button");
-
-    buttons.forEach(btn => btn.classList.remove("active"));
-
-    if(active === "home") buttons[0].classList.add("active");
-    if(active === "stats") buttons[1].classList.add("active");
-    if(active === "history") buttons[2].classList.add("active");
-}
-
-window.addEventListener("load", () => {
-    updateNav("home");
-});
-
-function moveIndicator(view){
-    const indicator = document.querySelector(".nav-indicator");
-
-    if(view === "home") indicator.style.transform = "translateX(0%)";
-    if(view === "stats") indicator.style.transform = "translateX(100%)";
-    if(view === "history") indicator.style.transform = "translateX(200%)";
-}
-
-console.log(document.querySelector(".nav-indicator"));
