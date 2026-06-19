@@ -24,6 +24,7 @@ body{
     max-width:420px;
     position:relative;
     min-height:100vh;
+    overflow:hidden;
 }
 
 /* =========================
@@ -258,4 +259,17 @@ button.secondary{
     border-radius:10px;
 
     transition:0.3s ease;
+}
+
+.navbar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:60px;
+
+    position:fixed;
+    display:flex;
+
+    position:relative; /* IMPORTANT */
 }

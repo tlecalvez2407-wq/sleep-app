@@ -171,34 +171,23 @@ function switchView(view){
 
     views.forEach(v => {
         v.classList.remove("active");
+        v.style.transform = "";
     });
 
     const next = document.getElementById(view + "View");
 
-    // direction animation
-    if(view !== currentView){
+    // reset animation
+    next.style.transition = "none";
+    next.style.transform = "translateX(20px)";
 
-        if(view === "home"){
-            next.style.transform = "translateX(-20px)";
-        }
-
-        if(view === "stats"){
-            next.style.transform = "translateX(20px)";
-        }
-
-        if(view === "history"){
-            next.style.transform = "translateX(20px)";
-        }
-    }
-
-    // force reflow (important pour animation)
     void next.offsetWidth;
 
+    next.style.transition = "0.35s ease";
     next.classList.add("active");
 
     currentView = view;
 
-    // navbar update si tu l'as
+    updateNav(view);
     moveIndicator(view);
 }
 
