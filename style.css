@@ -43,7 +43,7 @@ h1{
 }
 
 /* =========================
-   CARD PRINCIPALE
+   CARD
 ========================= */
 .card{
     background:#0f0f0f;
@@ -108,7 +108,7 @@ button.secondary{
 }
 
 /* =========================
-   INFO TEXT
+   INFO
 ========================= */
 .info{
     margin-top:14px;
@@ -167,7 +167,7 @@ button.secondary{
 }
 
 /* =========================
-   VIEWS (NAVIGATION)
+   VIEWS
 ========================= */
 .view{
     display:none;
@@ -178,7 +178,7 @@ button.secondary{
 }
 
 /* =========================
-   NAVBAR
+   NAVBAR (CLEAN FIX)
 ========================= */
 .navbar{
     position:fixed;
@@ -202,24 +202,31 @@ button.secondary{
     align-items:center;
     justify-content:center;
     transition:0.2s;
+
+    /* IMPORTANT: permet currentColor */
+    color:#777;
 }
 
 /* ICONES */
 .icon{
     width:24px;
     height:24px;
-    stroke:#777;
     fill:none;
+    stroke:currentColor;
     transition:0.2s;
 }
 
-/* ACTIVE */
+/* ACTIVE STATE */
+.navbar button.active{
+    color:#fff;
+}
+
+/* effet icône active */
 .navbar button.active .icon{
-    stroke:#fff;
     transform:scale(1.15);
 }
 
-/* CLICK EFFECT */
+/* CLICK */
 .navbar button:active{
     transform:scale(0.95);
 }
