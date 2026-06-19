@@ -7,39 +7,56 @@ function format(d){
 return d.toTimeString().slice(0,5);
 }
 
-function calc(){
+function calc() {
+    const wake = document.getElementById("wake").value;
+    if (!wake) return;
 
-const wake = document.getElementById("wake").value;
-if(!wake) return;
+    const [h, m] = wake.split(":").map(Number);
 
-const [h,m] = wake.split(":").map(Number);
-const wakeDate = new Date();
-wakeDate.setHours(h,m,0,0);
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
 
-const results = document.getElementById("results");
-results.innerHTML = "";
+    const cycle = 90 + 15; // 105 min
+    const options = [6, 5, 4, 3]; // cycles
 
-[6,5,4,3].forEach((c,i)=>{
+    options.forEach(cycles => {
+        let totalMinutes = cycles * cycle;
 
-const t = new Date(wakeDate.getTime() - ((c*cycle+latency)*60000));
+        let wakeDate = new Date();
+        wakeDate.setHours(h);
+        wakeDate.setMinutes(m);
 
-let cls = "result";
-if(i===0) cls += " good";
-else if(i===1) cls += " mid";
-else cls += " bad";
+        let sleepTime = new Date(wakeDate.getTime() - totalMinutes * 60000);
 
-results.innerHTML += `
-<div class="${cls}">
-${format(t)} — ${c*1.5}h (${c} cycles)
-</div>
-`;
+        let hours = sleepTime.getHours().toString().padStart(2, "0");
+        let minutes = sleepTime.getMinutes().toString().padStart(2, "0");
 
-if(i===0) targetTime = t;
-});
+        let qualityClass = "";
+        let label = "";
 
-startTimer();
-notifyPermission();
+        if (cycles >= 5) {
+            qualityClass = "good";
+            label = "Optimal";
+        } else if (cycles === 4) {
+            qualityClass = "medium";
+            label = "Correct";
+        } else {
+            qualityClass = "bad";
+            label = "Court";
+        }
 
+        const card = document.createElement("div");
+        card.className = `result-card ${qualityClass}`;
+
+        card.innerHTML = `
+            <div>
+                <div class="result-time">${hours}:${minutes}</div>
+                <div class="result-info">${cycles} cycles • ${label}</div>
+            </div>
+        `;
+
+        resultsDiv.appendChild(card);
+    });
 }
 
 function sleepNow(){
