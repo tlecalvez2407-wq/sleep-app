@@ -34,7 +34,7 @@ function calc() {
         let qualityClass = "";
         let label = "";
 
-        if (cycles >= 5) {
+        if (cycles === 6) {
             qualityClass = "good";
             label = "Optimal";
         } else if (cycles === 4) {
@@ -66,16 +66,33 @@ const now = new Date();
 const results = document.getElementById("results");
 results.innerHTML = "";
 
-[3,4,5,6].forEach((c,i)=>{
+const cycles = [3,4,5,6];
+
+cycles.forEach((c,i)=>{
 
 const t = new Date(now.getTime() + ((c*cycle+latency)*60000));
 
-let cls = "result";
-if(i===1) cls="result good";
+let cls = "";
+
+if(c >= 5){
+    cls = "good";
+}
+else if(c === 4){
+    cls = "medium";
+}
+else{
+    cls = "bad";
+}
+
+const hours = t.getHours().toString().padStart(2,"0");
+const minutes = t.getMinutes().toString().padStart(2,"0");
 
 results.innerHTML += `
-<div class="${cls}">
-Réveil : ${format(t)} — ${c*1.5}h
+<div class="result-card ${cls}">
+    <div>
+        <div class="result-time">${hours}:${minutes}</div>
+        <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
+    </div>
 </div>
 `;
 
