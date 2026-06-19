@@ -1,4 +1,4 @@
-alert("APP JS UPDATED");
+console.log("VERSION 2026 - APP JS CHARGE");
 const cycle = 90;
 const latency = 15;
 
