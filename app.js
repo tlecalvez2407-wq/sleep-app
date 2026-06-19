@@ -19,9 +19,19 @@ function switchView(view){
         b.classList.remove("active");
     });
 
-    if(view === "home") document.querySelectorAll(".navbar button")[0].classList.add("active");
-    if(view === "stats") document.querySelectorAll(".navbar button")[1].classList.add("active");
-    if(view === "history") document.querySelectorAll(".navbar button")[2].classList.add("active");
+    if(view==="home") document.querySelectorAll(".navbar button")[0].classList.add("active");
+    if(view==="stats") document.querySelectorAll(".navbar button")[1].classList.add("active");
+    if(view==="history") document.querySelectorAll(".navbar button")[2].classList.add("active");
+
+    moveIndicator(view);
+}
+
+function moveIndicator(view){
+    const ind = document.querySelector(".nav-indicator");
+
+    if(view==="home") ind.style.transform="translateX(0%)";
+    if(view==="stats") ind.style.transform="translateX(100%)";
+    if(view==="history") ind.style.transform="translateX(200%)";
 }
 
 /* RESET TIMER */

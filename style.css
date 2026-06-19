@@ -101,7 +101,6 @@ button.secondary{
 .medium{ border-left:4px solid #f59e0b; }
 .bad{ border-left:4px solid #ef4444; }
 
-/* NAVBAR */
 .navbar{
     position:fixed;
     bottom:0;
@@ -110,18 +109,47 @@ button.secondary{
     height:60px;
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
+
     display:flex;
     justify-content:space-around;
     align-items:center;
+
+    z-index:9999;
+    position:relative;
 }
 
+/* buttons */
 .navbar button{
     background:none;
     border:none;
-    font-size:20px;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     color:#777;
 }
 
+/* icons */
+.icon{
+    width:24px;
+    height:24px;
+    stroke:currentColor;
+    fill:none;
+}
+
+/* active */
 .navbar button.active{
     color:#fff;
+}
+
+/* indicator BAR */
+.nav-indicator{
+    position:absolute;
+    bottom:6px;
+    left:0;
+    height:3px;
+    width:33.33%;
+    background:#fff;
+    border-radius:10px;
+    transition:0.25s ease;
 }

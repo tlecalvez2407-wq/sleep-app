@@ -27,11 +27,10 @@
         <label>Heure de réveil</label>
         <input type="time" id="wake">
 
-        <button onclick="calc()">Calculer les heures</button>
+        <button onclick="calc()">Calculer</button>
         <button class="secondary" onclick="sleepNow()">Je vais dormir maintenant</button>
 
         <div class="timer" id="timer"></div>
-
         <div id="results"></div>
     </div>
 </div>
@@ -40,7 +39,7 @@
 <div id="statsView" class="view">
     <div class="card">
         <h2>Stats</h2>
-        <p>À venir : analyse de ton sommeil</p>
+        <p>Bientôt</p>
     </div>
 </div>
 
@@ -48,18 +47,37 @@
 <div id="historyView" class="view">
     <div class="card">
         <h2>Historique</h2>
-        <p>À venir : tes nuits enregistrées</p>
+        <p>Bientôt</p>
     </div>
 </div>
 
 </div>
 
-<!-- NAVBAR -->
+<!-- NAVBAR (SVG RESTAURÉS + INDICATOR) -->
 <div class="navbar">
 
-<button onclick="switchView('home')">🏠</button>
-<button onclick="switchView('stats')">📊</button>
-<button onclick="switchView('history')">🕒</button>
+<button onclick="switchView('home')">
+<svg viewBox="0 0 24 24" class="icon">
+<path d="M3 10.5L12 3l9 7.5V21H4V10.5z"
+stroke="currentColor" stroke-width="2" fill="none"/>
+</svg>
+</button>
+
+<button onclick="switchView('stats')">
+<svg viewBox="0 0 24 24" class="icon">
+<path d="M4 19V5m6 14V9m6 10V3m6 16V11"
+stroke="currentColor" stroke-width="2"/>
+</svg>
+</button>
+
+<button onclick="switchView('history')">
+<svg viewBox="0 0 24 24" class="icon">
+<path d="M12 8v5l3 2a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"
+stroke="currentColor" stroke-width="2"/>
+</svg>
+</button>
+
+<div class="nav-indicator"></div>
 
 </div>
 
