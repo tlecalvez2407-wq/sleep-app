@@ -172,6 +172,7 @@ button.secondary{
     bottom:0;
     left:0;
     right:0;
+
     height:60px;
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
@@ -180,10 +181,11 @@ button.secondary{
     justify-content:space-around;
     align-items:center;
 
-    z-index:999;
+    z-index:9999;
 
-    /* IMPORTANT pour la barre */
-    position:fixed;
+    /* IMPORTANT mobile */
+    transform:translateZ(0);
+    -webkit-transform:translateZ(0);
 }
 
 /* boutons */
