@@ -7,7 +7,6 @@
 <title>Sleep Cycle</title>
 
 <link rel="stylesheet" href="style.css">
-
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#000000">
 
@@ -19,22 +18,26 @@
 
 <div class="container">
 
-<h1>😴 Sleep Cycle</h1>
+<header class="header">
+    <h1>Sleep Cycle</h1>
+    <p class="subtitle">Analyse de ton rythme de sommeil</p>
+</header>
 
 <div class="card">
 
+<label for="wake">Heure de réveil</label>
 <input type="time" id="wake">
 
-<button onclick="calc()">Calculer coucher</button>
-<button onclick="sleepNow()">Je vais dormir maintenant</button>
+<button onclick="calc()">Calculer les heures de coucher</button>
+<button class="secondary" onclick="sleepNow()">Je vais dormir maintenant</button>
 
 <div class="timer" id="timer"></div>
 
 <div id="results"></div>
 
-<div class="small">
-Cycles de 90 min + 15 min d’endormissement
-</div>
+<p class="info">
+Cycles de sommeil de 90 minutes + 15 minutes d’endormissement
+</p>
 
 </div>
 
