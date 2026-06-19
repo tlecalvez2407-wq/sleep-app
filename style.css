@@ -10,6 +10,10 @@ body{
     color:#fff;
 }
 
+body{
+    padding-bottom:60px;
+}
+
 .app{
     max-width:420px;
     margin:auto;
@@ -102,11 +106,11 @@ button.secondary{
 /* ================= NAVBAR ================= */
 .navbar{
     position:fixed;
-    bottom:0;
     left:0;
     right:0;
+    bottom:0;
 
-    height:52px;
+    height:44px; /* 🔥 plus bas = effet app pro */
 
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
@@ -117,7 +121,6 @@ button.secondary{
 
     z-index:9999;
 
-    position:relative; /* 🔥 IMPORTANT FIX */
     padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -125,7 +128,10 @@ button.secondary{
     background:none;
     border:none;
 
-    padding:6px;
+    padding:0; /* 🔥 CRUCIAL */
+
+    width:60px;
+    height:44px;
 
     display:flex;
     align-items:center;
