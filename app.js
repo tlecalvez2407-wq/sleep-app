@@ -4,7 +4,9 @@ const latency = 15;
 let targetTime = null;
 let timerInterval = null;
 
-/* NAV */
+/* =========================
+   NAVIGATION
+========================= */
 function switchView(view){
 
     document.querySelectorAll(".view").forEach(v=>{
@@ -13,34 +15,52 @@ function switchView(view){
 
     document.getElementById(view+"View").classList.add("active");
 
-    document.querySelectorAll(".navbar button").forEach(b=>{
-        b.classList.remove("active");
-    });
+    const buttons = document.querySelectorAll(".navbar button");
 
-    if(view==="home") document.querySelectorAll(".navbar button")[0].classList.add("active");
-    if(view==="stats") document.querySelectorAll(".navbar button")[1].classList.add("active");
-    if(view==="history") document.querySelectorAll(".navbar button")[2].classList.add("active");
+    buttons.forEach(b=>b.classList.remove("active"));
+
+    if(view === "home") buttons[0].classList.add("active");
+    if(view === "stats") buttons[1].classList.add("active");
+    if(view === "history") buttons[2].classList.add("active");
 
     moveIndicator(view);
 }
 
-/* INDICATOR */
+/* =========================
+   INDICATOR FIX (IMPORTANT)
+========================= */
 function moveIndicator(view){
+
     const ind = document.querySelector(".nav-indicator");
+    if(!ind) return;
 
-    if(view==="home") ind.style.transform="translateX(0%)";
-    if(view==="stats") ind.style.transform="translateX(100%)";
-    if(view==="history") ind.style.transform="translateX(200%)";
+    let x = 0;
+
+    if(view === "home") x = 0;
+    if(view === "stats") x = 100;
+    if(view === "history") x = 200;
+
+    ind.style.transform = `translateX(${x}%)`;
 }
 
-/* CLEAR TIMER */
+/* =========================
+   CLEAR TIMER
+========================= */
 function clearTimer(){
+
     targetTime = null;
+
     document.getElementById("timer").innerText = "";
-    if(timerInterval) clearInterval(timerInterval);
+
+    if(timerInterval){
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 }
 
-/* CALC */
+/* =========================
+   CALCULATE SLEEP TIMES
+========================= */
 function calc(){
 
     clearTimer();
@@ -53,27 +73,33 @@ function calc(){
     const res = document.getElementById("results");
     res.innerHTML = "";
 
-    [6,5,4,3].forEach(c=>{
+    const cycles = [6,5,4,3];
 
-        let total = c*(cycle+latency);
+    cycles.forEach(c=>{
 
-        let d = new Date();
-        d.setHours(h,m);
+        const total = c * (cycle + latency);
 
-        let sleep = new Date(d.getTime() - total*60000);
+        const base = new Date();
+        base.setHours(h,m,0,0);
 
-        let cls = c>=5 ? "good" : c===4 ? "medium" : "bad";
+        const sleep = new Date(base.getTime() - total * 60000);
+
+        const cls =
+            c >= 5 ? "good" :
+            c === 4 ? "medium" :
+            "bad";
 
         res.innerHTML += `
-        <div class="result ${cls}">
-            ${sleep.getHours().toString().padStart(2,"0")}:
-            ${sleep.getMinutes().toString().padStart(2,"0")}
-            — ${c} cycles
-        </div>`;
+            <div class="result ${cls}">
+                ${formatTime(sleep)} — ${c} cycles
+            </div>
+        `;
     });
 }
 
-/* SLEEP NOW */
+/* =========================
+   SLEEP NOW MODE
+========================= */
 function sleepNow(){
 
     clearTimer();
@@ -82,47 +108,64 @@ function sleepNow(){
     const res = document.getElementById("results");
     res.innerHTML = "";
 
-    [6,5,4,3].forEach((c,i)=>{
+    const cycles = [6,5,4,3];
 
-        let t = new Date(now.getTime() + c*(cycle+latency)*60000);
+    cycles.forEach((c,i)=>{
 
-        let cls = c>=5 ? "good" : c===4 ? "medium" : "bad";
+        const t = new Date(now.getTime() + c * (cycle + latency) * 60000);
+
+        const cls =
+            c >= 5 ? "good" :
+            c === 4 ? "medium" :
+            "bad";
 
         res.innerHTML += `
-        <div class="result ${cls}">
-            ${t.getHours().toString().padStart(2,"0")}:
-            ${t.getMinutes().toString().padStart(2,"0")}
-            — ${c} cycles
-        </div>`;
+            <div class="result ${cls}">
+                ${formatTime(t)} — ${c} cycles
+            </div>
+        `;
 
-        if(i===1) targetTime = t;
+        if(i === 1){
+            targetTime = t;
+        }
     });
 
     startTimer();
 }
 
-/* TIMER */
+/* =========================
+   TIMER
+========================= */
 function startTimer(){
 
-    if(timerInterval) clearInterval(timerInterval);
+    if(timerInterval){
+        clearInterval(timerInterval);
+    }
 
     timerInterval = setInterval(()=>{
 
         if(!targetTime) return;
 
-        let diff = targetTime - new Date();
+        const diff = targetTime - new Date();
 
-        if(diff<=0){
+        if(diff <= 0){
             document.getElementById("timer").innerText = "🔥 C'est l'heure";
             return;
         }
 
-        let h = Math.floor(diff/3600000);
-        let m = Math.floor(diff%3600000/60000);
-        let s = Math.floor(diff%60000/1000);
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
 
         document.getElementById("timer").innerText =
-        `${h}h ${m}m ${s}s`;
+            `${h}h ${m}m ${s}s`;
 
     },1000);
+}
+
+/* =========================
+   FORMAT TIME
+========================= */
+function formatTime(date){
+    return date.toTimeString().slice(0,5);
 }

@@ -17,7 +17,7 @@ body{
     padding-bottom:80px;
 }
 
-/* VIEWS */
+/* ================= VIEW ================= */
 .view{
     display:none;
 }
@@ -26,7 +26,7 @@ body{
     display:block;
 }
 
-/* CARD */
+/* ================= CARD ================= */
 .card{
     background:#0f0f0f;
     border:1px solid #1f1f1f;
@@ -34,7 +34,7 @@ body{
     padding:16px;
 }
 
-/* TEXT */
+/* ================= TEXT ================= */
 h1{
     font-size:26px;
 }
@@ -45,7 +45,7 @@ h1{
     margin-bottom:10px;
 }
 
-/* INPUT */
+/* ================= INPUT ================= */
 input{
     width:100%;
     padding:14px;
@@ -56,7 +56,7 @@ input{
     color:#fff;
 }
 
-/* BUTTONS */
+/* ================= BUTTONS ================= */
 button{
     width:100%;
     margin-top:10px;
@@ -72,14 +72,14 @@ button.secondary{
     border:1px solid #2a2a2a;
 }
 
-/* TIMER */
+/* ================= TIMER ================= */
 .timer{
     margin-top:12px;
     text-align:center;
     color:#4f8cff;
 }
 
-/* RESULTS */
+/* ================= RESULTS ================= */
 #results{
     margin-top:12px;
     display:flex;
@@ -99,14 +99,14 @@ button.secondary{
 .medium{ border-left:4px solid #f59e0b; }
 .bad{ border-left:4px solid #ef4444; }
 
-/* NAVBAR */
+/* ================= NAVBAR ================= */
 .navbar{
     position:fixed;
     bottom:0;
     left:0;
     right:0;
 
-    height:52px; /* 🔥 plus fin */
+    height:52px;
 
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
@@ -117,6 +117,7 @@ button.secondary{
 
     z-index:9999;
 
+    position:relative; /* 🔥 IMPORTANT FIX */
     padding-bottom: env(safe-area-inset-bottom);
 }
 
@@ -124,7 +125,8 @@ button.secondary{
     background:none;
     border:none;
 
-    padding:6px; /* 🔥 réduit fortement */
+    padding:6px;
+
     display:flex;
     align-items:center;
     justify-content:center;
@@ -132,31 +134,32 @@ button.secondary{
     color:#777;
 }
 
+/* ICON */
 .icon{
-    width:20px;   /* 🔥 plus petit */
+    width:20px;
     height:20px;
-
     display:block;
+
     stroke:currentColor;
     fill:none;
 }
 
-/* ACTIVE ICON */
+/* ACTIVE */
 .navbar button.active{
     color:#fff;
 }
 
-/* INDICATOR BAR */
+/* INDICATOR */
 .nav-indicator{
     position:absolute;
-    bottom:3px; /* 🔥 plus proche du bord */
-
+    bottom:3px;
     left:0;
+
     width:33.333%;
-    height:2px; /* 🔥 beaucoup plus fin */
+    height:2px;
 
     background:#fff;
     border-radius:10px;
 
-    transition:0.3s ease;
+    transition:transform 0.3s ease;
 }
