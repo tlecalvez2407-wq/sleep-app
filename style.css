@@ -127,6 +127,7 @@ button.secondary{
     z-index:9999;
 
     padding-bottom: env(safe-area-inset-bottom);
+    overflow: visible;
 }
 
 .navbar button{
