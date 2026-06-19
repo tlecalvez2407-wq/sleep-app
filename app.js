@@ -188,15 +188,9 @@ function updateNav(active){
 
     buttons.forEach(btn => btn.classList.remove("active"));
 
-    if(active === "home"){
-        buttons[0].classList.add("active");
-    }
-    if(active === "stats"){
-        buttons[1].classList.add("active");
-    }
-    if(active === "history"){
-        buttons[2].classList.add("active");
-    }
+    if(active === "home") buttons[0].classList.add("active");
+    if(active === "stats") buttons[1].classList.add("active");
+    if(active === "history") buttons[2].classList.add("active");
 }
 
 window.addEventListener("load", () => {

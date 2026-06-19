@@ -1,9 +1,15 @@
+/* =========================
+   RESET
+========================= */
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
 }
 
+/* =========================
+   BASE APP
+========================= */
 body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     background:#000;
@@ -18,6 +24,9 @@ body{
     max-width:420px;
 }
 
+/* =========================
+   HEADER
+========================= */
 .header{
     margin-bottom:18px;
 }
@@ -33,6 +42,9 @@ h1{
     margin-top:4px;
 }
 
+/* =========================
+   CARD PRINCIPALE
+========================= */
 .card{
     background:#0f0f0f;
     border:1px solid #1f1f1f;
@@ -40,6 +52,9 @@ h1{
     padding:18px;
 }
 
+/* =========================
+   INPUTS
+========================= */
 label{
     font-size:13px;
     color:#aaa;
@@ -56,6 +71,9 @@ input{
     font-size:16px;
 }
 
+/* =========================
+   BUTTONS
+========================= */
 button{
     width:100%;
     margin-top:12px;
@@ -66,6 +84,7 @@ button{
     font-weight:500;
     background:#2f6fff;
     color:#fff;
+    transition:0.2s;
 }
 
 button:active{
@@ -78,6 +97,9 @@ button.secondary{
     color:#ddd;
 }
 
+/* =========================
+   TIMER
+========================= */
 .timer{
     margin-top:14px;
     text-align:center;
@@ -85,12 +107,18 @@ button.secondary{
     font-size:18px;
 }
 
+/* =========================
+   INFO TEXT
+========================= */
 .info{
     margin-top:14px;
     font-size:12px;
     color:#777;
 }
 
+/* =========================
+   RESULTS
+========================= */
 .results{
     margin-top:16px;
     display:flex;
@@ -123,8 +151,9 @@ button.secondary{
     color:#aaa;
 }
 
-/* QUALITÉ */
-
+/* =========================
+   QUALITÉ SOMMEIL
+========================= */
 .good{
     border-left:4px solid #22c55e;
 }
@@ -137,6 +166,9 @@ button.secondary{
     border-left:4px solid #ef4444;
 }
 
+/* =========================
+   VIEWS (NAVIGATION)
+========================= */
 .view{
     display:none;
 }
@@ -145,7 +177,9 @@ button.secondary{
     display:block;
 }
 
-/* NAV BAR */
+/* =========================
+   NAVBAR
+========================= */
 .navbar{
     position:fixed;
     bottom:0;
@@ -167,40 +201,25 @@ button.secondary{
     display:flex;
     align-items:center;
     justify-content:center;
+    transition:0.2s;
 }
 
+/* ICONES */
 .icon{
     width:24px;
     height:24px;
-    stroke:#888;
-    fill:none;
-}
-
-/* actif / pressé */
-.navbar button:active .icon{
-    stroke:#fff;
-    transform:scale(0.95);
-}
-
-.navbar button{
-    transition: 0.2s;
-}
-
-.icon{
-    width:24px;
-    height:24px;
-    stroke:#8a8a8a; /* gris Samsung */
+    stroke:#777;
     fill:none;
     transition:0.2s;
 }
 
-/* état actif */
+/* ACTIVE */
 .navbar button.active .icon{
-    stroke:#ffffff;
-    transform:scale(1.1);
+    stroke:#fff;
+    transform:scale(1.15);
 }
 
-/* clic feedback */
-.navbar button:active .icon{
-    transform:scale(0.9);
+/* CLICK EFFECT */
+.navbar button:active{
+    transform:scale(0.95);
 }
