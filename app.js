@@ -200,18 +200,11 @@ window.addEventListener("load", () => {
 });
 
 function moveIndicator(view){
-
     const indicator = document.querySelector(".nav-indicator");
 
-    if(view === "home"){
-        indicator.style.transform = "translateX(0%)";
-    }
-
-    if(view === "stats"){
-        indicator.style.transform = "translateX(100%)";
-    }
-
-    if(view === "history"){
-        indicator.style.transform = "translateX(200%)";
-    }
+    if(view === "home") indicator.style.transform = "translateX(0%)";
+    if(view === "stats") indicator.style.transform = "translateX(100%)";
+    if(view === "history") indicator.style.transform = "translateX(200%)";
 }
+
+console.log(document.querySelector(".nav-indicator"));

@@ -152,33 +152,20 @@ button.secondary{
 }
 
 /* =========================
-   QUALITÉ SOMMEIL
+   QUALITÉ
 ========================= */
-.good{
-    border-left:4px solid #22c55e;
-}
-
-.medium{
-    border-left:4px solid #f59e0b;
-}
-
-.bad{
-    border-left:4px solid #ef4444;
-}
+.good{ border-left:4px solid #22c55e; }
+.medium{ border-left:4px solid #f59e0b; }
+.bad{ border-left:4px solid #ef4444; }
 
 /* =========================
    VIEWS
 ========================= */
-.view{
-    display:none;
-}
-
-.view.active{
-    display:block;
-}
+.view{ display:none; }
+.view.active{ display:block; }
 
 /* =========================
-   NAVBAR (CLEAN FIX)
+   NAVBAR (FIX ULTRA CLEAN)
 ========================= */
 .navbar{
     position:fixed;
@@ -188,12 +175,18 @@ button.secondary{
     height:60px;
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
+
     display:flex;
     justify-content:space-around;
     align-items:center;
+
     z-index:999;
+
+    /* IMPORTANT pour la barre */
+    position:fixed;
 }
 
+/* boutons */
 .navbar button{
     background:none;
     border:none;
@@ -201,13 +194,12 @@ button.secondary{
     display:flex;
     align-items:center;
     justify-content:center;
-    transition:0.2s;
 
-    /* IMPORTANT: permet currentColor */
     color:#777;
+    transition:0.2s;
 }
 
-/* ICONES */
+/* icônes */
 .icon{
     width:24px;
     height:24px;
@@ -216,44 +208,33 @@ button.secondary{
     transition:0.2s;
 }
 
-/* ACTIVE STATE */
+/* actif */
 .navbar button.active{
     color:#fff;
 }
 
-/* effet icône active */
 .navbar button.active .icon{
     transform:scale(1.15);
 }
 
-/* CLICK */
+/* click */
 .navbar button:active{
     transform:scale(0.95);
 }
 
-.navbar{
-    position:fixed;
-    bottom:0;
-    left:0;
-    right:0;
-    height:60px;
-    background:#0a0a0a;
-    border-top:1px solid #1f1f1f;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    z-index:999;
-
-    position:relative;
-}
-
+/* =========================
+   INDICATEUR (BARRE)
+========================= */
 .nav-indicator{
     position:absolute;
     bottom:6px;
     left:0;
-    width:33.33%;
+
     height:3px;
+    width:33.33%;
+
     background:#fff;
     border-radius:10px;
+
     transition:0.3s ease;
 }
