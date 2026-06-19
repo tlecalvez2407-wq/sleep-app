@@ -1,12 +1,10 @@
-console.log("Sleep app loaded");
-
 const cycle = 90;
 const latency = 15;
 
 let targetTime = null;
 let timerInterval = null;
 
-/* NAVIGATION */
+/* NAV */
 function switchView(view){
 
     document.querySelectorAll(".view").forEach(v=>{
@@ -26,6 +24,7 @@ function switchView(view){
     moveIndicator(view);
 }
 
+/* INDICATOR */
 function moveIndicator(view){
     const ind = document.querySelector(".nav-indicator");
 
@@ -34,14 +33,14 @@ function moveIndicator(view){
     if(view==="history") ind.style.transform="translateX(200%)";
 }
 
-/* RESET TIMER */
+/* CLEAR TIMER */
 function clearTimer(){
     targetTime = null;
-    if(timerInterval) clearInterval(timerInterval);
     document.getElementById("timer").innerText = "";
+    if(timerInterval) clearInterval(timerInterval);
 }
 
-/* CALCUL HEURES */
+/* CALC */
 function calc(){
 
     clearTimer();
@@ -54,27 +53,27 @@ function calc(){
     const res = document.getElementById("results");
     res.innerHTML = "";
 
-    [6,5,4,3].forEach(cycles=>{
+    [6,5,4,3].forEach(c=>{
 
-        let total = cycles * (cycle + latency);
+        let total = c*(cycle+latency);
 
-        let base = new Date();
-        base.setHours(h,m);
+        let d = new Date();
+        d.setHours(h,m);
 
-        let sleep = new Date(base.getTime() - total*60000);
+        let sleep = new Date(d.getTime() - total*60000);
 
-        let cls = cycles >= 5 ? "good" : cycles === 4 ? "medium" : "bad";
+        let cls = c>=5 ? "good" : c===4 ? "medium" : "bad";
 
         res.innerHTML += `
         <div class="result ${cls}">
             ${sleep.getHours().toString().padStart(2,"0")}:
             ${sleep.getMinutes().toString().padStart(2,"0")}
-            — ${cycles} cycles
+            — ${c} cycles
         </div>`;
     });
 }
 
-/* MODE DODO */
+/* SLEEP NOW */
 function sleepNow(){
 
     clearTimer();
@@ -87,7 +86,7 @@ function sleepNow(){
 
         let t = new Date(now.getTime() + c*(cycle+latency)*60000);
 
-        let cls = c >= 5 ? "good" : c === 4 ? "medium" : "bad";
+        let cls = c>=5 ? "good" : c===4 ? "medium" : "bad";
 
         res.innerHTML += `
         <div class="result ${cls}">
@@ -96,7 +95,7 @@ function sleepNow(){
             — ${c} cycles
         </div>`;
 
-        if(i === 1) targetTime = t;
+        if(i===1) targetTime = t;
     });
 
     startTimer();
@@ -113,8 +112,8 @@ function startTimer(){
 
         let diff = targetTime - new Date();
 
-        if(diff <= 0){
-            document.getElementById("timer").innerText = "🔥 C'est l'heure de dormir";
+        if(diff<=0){
+            document.getElementById("timer").innerText = "🔥 C'est l'heure";
             return;
         }
 

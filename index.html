@@ -21,17 +21,20 @@
 <!-- HOME -->
 <div id="homeView" class="view active">
     <div class="card">
+
         <h1>Sleep Cycle</h1>
-        <p class="subtitle">Optimisation du sommeil</p>
+        <p class="subtitle">Analyse du sommeil</p>
 
         <label>Heure de réveil</label>
         <input type="time" id="wake">
 
-        <button onclick="calc()">Calculer</button>
+        <button onclick="calc()">Calculer les heures</button>
         <button class="secondary" onclick="sleepNow()">Je vais dormir maintenant</button>
 
         <div class="timer" id="timer"></div>
+
         <div id="results"></div>
+
     </div>
 </div>
 
@@ -39,7 +42,7 @@
 <div id="statsView" class="view">
     <div class="card">
         <h2>Stats</h2>
-        <p>Bientôt</p>
+        <p>En cours de développement</p>
     </div>
 </div>
 
@@ -47,13 +50,13 @@
 <div id="historyView" class="view">
     <div class="card">
         <h2>Historique</h2>
-        <p>Bientôt</p>
+        <p>Bientôt disponible</p>
     </div>
 </div>
 
 </div>
 
-<!-- NAVBAR (SVG RESTAURÉS + INDICATOR) -->
+<!-- NAVBAR -->
 <div class="navbar">
 
 <button onclick="switchView('home')">
