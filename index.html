@@ -18,6 +18,9 @@
 
 <div class="container">
 
+<!-- VUE HOME -->
+<div id="homeView" class="view active">
+
 <header class="header">
     <h1>Sleep Cycle</h1>
     <p class="subtitle">Analyse de ton rythme de sommeil</p>
@@ -41,6 +44,31 @@ Cycles de sommeil de 90 minutes + 15 minutes d’endormissement
 
 </div>
 
+</div>
+
+<!-- VUE STATS -->
+<div id="statsView" class="view">
+    <div class="card">
+        <h2>Stats</h2>
+        <p>Bientôt : score de sommeil + analyse</p>
+    </div>
+</div>
+
+<!-- VUE HISTORIQUE -->
+<div id="historyView" class="view">
+    <div class="card">
+        <h2>Historique</h2>
+        <p>Bientôt : tes nuits enregistrées</p>
+    </div>
+</div>
+
+</div>
+
+<!-- NAV BAR -->
+<div class="navbar">
+    <button onclick="switchView('home')">🏠</button>
+    <button onclick="switchView('stats')">📊</button>
+    <button onclick="switchView('history')">📜</button>
 </div>
 
 <script src="app.js"></script>

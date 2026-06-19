@@ -136,3 +136,39 @@ button.secondary{
 .bad{
     border-left:4px solid #ef4444;
 }
+
+.view{
+    display:none;
+}
+
+.view.active{
+    display:block;
+}
+
+/* NAV BAR */
+.navbar{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    height:60px;
+    background:#0a0a0a;
+    border-top:1px solid #1f1f1f;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+}
+
+.navbar button{
+    background:none;
+    border:none;
+    font-size:22px;
+    color:#aaa;
+    width:auto;
+    margin:0;
+    padding:10px;
+}
+
+.navbar button:active{
+    transform:scale(0.9);
+}

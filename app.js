@@ -162,3 +162,20 @@ setInterval(()=>{
         });
     }
 },60000);
+
+function switchView(view){
+
+    document.getElementById("homeView").classList.remove("active");
+    document.getElementById("statsView").classList.remove("active");
+    document.getElementById("historyView").classList.remove("active");
+
+    if(view === "home"){
+        document.getElementById("homeView").classList.add("active");
+    }
+    if(view === "stats"){
+        document.getElementById("statsView").classList.add("active");
+    }
+    if(view === "history"){
+        document.getElementById("historyView").classList.add("active");
+    }
+}
