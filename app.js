@@ -36,9 +36,7 @@ function calc() {
 
     const options = [6, 5, 4, 3];
 
-    let good = [];
-    let medium = [];
-    let bad = [];
+    let results = [];
 
     options.forEach(cycles => {
 
@@ -53,35 +51,23 @@ function calc() {
         let hours = sleepTime.getHours().toString().padStart(2, "0");
         let minutes = sleepTime.getMinutes().toString().padStart(2, "0");
 
-        let obj = {
-            html: `
-            <div class="result-card">
+        let cls = "";
+
+        if (cycles === 6 || cycles === 5) cls = "good";
+        else if (cycles === 4) cls = "medium";
+        else cls = "bad";
+
+        results.push(`
+            <div class="result-card ${cls}">
                 <div>
                     <div class="result-time">${hours}:${minutes}</div>
                     <div class="result-info">${cycles} cycles • ${(cycles*1.5).toFixed(1)}h</div>
                 </div>
             </div>
-            `
-        };
-
-        if(cycles === 6){
-            good.push(obj);
-        }
-        else if(cycles === 5){
-            good.push(obj);
-        }
-        else if(cycles === 4){
-            medium.push(obj);
-        }
-        else{
-            bad.push(obj);
-        }
+        `);
     });
 
-    resultsDiv.innerHTML =
-        good.map(x => x.html).join("") +
-        medium.map(x => x.html).join("") +
-        bad.map(x => x.html).join("");
+    resultsDiv.innerHTML = results.join("");
 }
 
 /* =========================
@@ -97,9 +83,7 @@ function sleepNow(){
 
     const cycles = [6,5,4,3];
 
-    let good = [];
-    let medium = [];
-    let bad = [];
+    let output = [];
 
     cycles.forEach((c,i)=>{
 
@@ -108,32 +92,25 @@ function sleepNow(){
         let hours = t.getHours().toString().padStart(2,"0");
         let minutes = t.getMinutes().toString().padStart(2,"0");
 
-        let html = `
-        <div class="result-card">
-            <div>
-                <div class="result-time">${hours}:${minutes}</div>
-                <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
-            </div>
-        </div>
-        `;
+        let cls = "";
 
-        if(c === 6 || c === 5){
-            good.push(html);
-        }
-        else if(c === 4){
-            medium.push(html);
-        }
-        else{
-            bad.push(html);
-        }
+        if(c === 6 || c === 5) cls = "good";
+        else if(c === 4) cls = "medium";
+        else cls = "bad";
+
+        output.push(`
+            <div class="result-card ${cls}">
+                <div>
+                    <div class="result-time">${hours}:${minutes}</div>
+                    <div class="result-info">${c} cycles • ${(c*1.5).toFixed(1)}h</div>
+                </div>
+            </div>
+        `);
 
         if(i === 1) targetTime = t;
     });
 
-    results.innerHTML =
-        good.join("") +
-        medium.join("") +
-        bad.join("");
+    results.innerHTML = output.join("");
 
     startTimer();
     notifyPermission();
