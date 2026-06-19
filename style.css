@@ -106,40 +106,40 @@ button.secondary{
 /* ================= NAVBAR ================= */
 .navbar{
     position:fixed;
+    bottom:0;
     left:0;
     right:0;
-    bottom:0;
 
-    height:44px; /* 🔥 plus bas = effet app pro */
+    height:44px;
 
     background:#0a0a0a;
     border-top:1px solid #1f1f1f;
 
-    display:flex;
-    justify-content:space-around;
+    display:grid;              /* 🔥 IMPORTANT */
+    grid-template-columns: repeat(3, 1fr);
+
     align-items:center;
 
     z-index:9999;
 
     padding-bottom: env(safe-area-inset-bottom);
-    box-sizing:border-box;
 }
 
 .navbar button{
     background:none;
     border:none;
 
-    padding:0;
-    margin:0;
-
-    width:33.33%;
-    height:100%;
+    width:100%;
+    height:44px;
 
     display:flex;
     align-items:center;
     justify-content:center;
 
-    overflow:hidden; /* 🔥 évite le “crop visuel chelou” */
+    padding:0;
+    margin:0;
+
+    overflow:hidden;
     color:#777;
 }
 
@@ -147,9 +147,9 @@ button.secondary{
 .icon{
     width:20px;
     height:20px;
-    display:block;
 
-    flex-shrink:0; /* 🔥 empêche compression bizarre */
+    display:block;
+    flex-shrink:0;
 
     stroke:currentColor;
     fill:none;
