@@ -5,48 +5,43 @@
 const CYCLE_DURATION = 90; // minutes
 const FALL_ASLEEP_TIME = 15; // minutes
 
-let targetTime = null;
 let timerInterval = null;
+let currentSession = null;
 
 /* =========================
    NAVIGATION
 ========================= */
 
 function switchView(view) {
-    // Update views
     document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
     const targetView = document.getElementById(view + "View");
     if (targetView) targetView.classList.add("active");
 
-    // Update nav buttons
     document.querySelectorAll(".navbar button").forEach(btn => btn.classList.remove("active"));
     const targetNav = document.getElementById("nav-" + view);
     if (targetNav) targetNav.classList.add("active");
 
-    // Load data if needed
     if (view === "history") loadHistory();
+    if (view === "stats") updateStats();
 }
 
 /* =========================
-   CALCULATIONS
+   CALCULATIONS (PLANNING)
 ========================= */
 
 function calc() {
-    stopTimer();
     const wakeInput = document.getElementById("wake").value;
     if (!wakeInput) return;
 
     const [hours, minutes] = wakeInput.split(":").map(Number);
     const resultsContainer = document.getElementById("results");
-    resultsContainer.innerHTML = "";
+    resultsContainer.innerHTML = `<h3>Heures de coucher suggérées :</h3>`;
 
-    // Calculate sleep times for 6, 5, 4, 3 cycles
     [6, 5, 4, 3].forEach(cycles => {
         const totalMinutes = cycles * CYCLE_DURATION + FALL_ASLEEP_TIME;
         const wakeDate = new Date();
         wakeDate.setHours(hours, minutes, 0, 0);
         
-        // If wake time is earlier than now, assume it's for tomorrow
         if (wakeDate < new Date()) {
             wakeDate.setDate(wakeDate.getDate() + 1);
         }
@@ -56,38 +51,14 @@ function calc() {
     });
 }
 
-function sleepNow() {
-    stopTimer();
-    const now = new Date();
-    const resultsContainer = document.getElementById("results");
-    resultsContainer.innerHTML = "";
-
-    // Calculate wake times for 6, 5, 4, 3 cycles
-    [6, 5, 4, 3].forEach((cycles, index) => {
-        const totalMinutes = cycles * CYCLE_DURATION + FALL_ASLEEP_TIME;
-        const wakeDate = new Date(now.getTime() + totalMinutes * 60000);
-        
-        renderResult(wakeDate, cycles, resultsContainer, true);
-
-        // Set the timer for the most optimal cycle (6 cycles)
-        if (cycles === 6) {
-            targetTime = wakeDate;
-            saveToHistory(wakeDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), cycles);
-        }
-    });
-
-    startTimer();
-}
-
-function renderResult(date, cycles, container, isWakeTime = false) {
+function renderResult(date, cycles, container) {
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const statusClass = cycles >= 5 ? "good" : (cycles === 4 ? "medium" : "bad");
-    const label = isWakeTime ? "Réveil à" : "Coucher à";
 
     container.innerHTML += `
         <div class="result ${statusClass}">
             <div>
-                <div class="result-info">${label}</div>
+                <div class="result-info">Coucher à</div>
                 <div class="result-time">${timeStr}</div>
             </div>
             <div class="result-info">${cycles} cycles (${Math.floor(cycles * 1.5)}h)</div>
@@ -96,61 +67,90 @@ function renderResult(date, cycles, container, isWakeTime = false) {
 }
 
 /* =========================
-   TIMER
+   SESSION MANAGEMENT
 ========================= */
 
-function startTimer() {
-    const container = document.getElementById("timerContainer");
-    const display = document.getElementById("timer");
+function startSleepSession() {
+    const now = new Date();
+    currentSession = {
+        startTime: now.getTime(),
+        startTimeStr: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    };
     
-    if (!targetTime) return;
-    container.classList.add("active");
+    localStorage.setItem("activeSession", JSON.stringify(currentSession));
+    updateSessionUI();
+}
 
+function endSleepSession() {
+    if (!currentSession) return;
+
+    const now = new Date();
+    const endTime = now.getTime();
+    const durationMs = endTime - currentSession.startTime;
+    const durationMin = Math.floor(durationMs / 60000);
+    const cycles = parseFloat(((durationMin - FALL_ASLEEP_TIME) / CYCLE_DURATION).toFixed(1));
+
+    saveToHistory({
+        date: new Date(currentSession.startTime).toLocaleDateString('fr-FR'),
+        start: currentSession.startTimeStr,
+        end: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        duration: durationMin,
+        cycles: cycles,
+        timestamp: currentSession.startTime
+    });
+
+    currentSession = null;
+    localStorage.removeItem("activeSession");
+    updateSessionUI();
+    switchView('history');
+}
+
+function updateSessionUI() {
+    const sessionActive = document.getElementById("sessionActive");
+    const sessionInactive = document.getElementById("sessionInactive");
+    const startTimeDisplay = document.getElementById("sessionStartTime");
+
+    if (currentSession) {
+        sessionActive.style.display = "block";
+        sessionInactive.style.display = "none";
+        startTimeDisplay.innerText = currentSession.startTimeStr;
+        startLiveTimer();
+    } else {
+        sessionActive.style.display = "none";
+        sessionInactive.style.display = "block";
+        stopLiveTimer();
+    }
+}
+
+function startLiveTimer() {
+    const timerDisplay = document.getElementById("liveTimer");
     if (timerInterval) clearInterval(timerInterval);
 
     const update = () => {
-        const now = new Date();
-        const diff = targetTime - now;
-
-        if (diff <= 0) {
-            display.innerText = "C'est l'heure !";
-            clearInterval(timerInterval);
-            return;
-        }
-
+        if (!currentSession) return;
+        const diff = Date.now() - currentSession.startTime;
         const h = Math.floor(diff / 3600000);
         const m = Math.floor((diff % 3600000) / 60000);
         const s = Math.floor((diff % 60000) / 1000);
-
-        display.innerText = `${h}h ${m}m ${s}s`;
+        timerDisplay.innerText = `${h}h ${m}m ${s}s`;
     };
 
     update();
     timerInterval = setInterval(update, 1000);
 }
 
-function stopTimer() {
-    targetTime = null;
+function stopLiveTimer() {
     if (timerInterval) clearInterval(timerInterval);
-    document.getElementById("timerContainer").classList.remove("active");
 }
 
 /* =========================
-   HISTORY
+   HISTORY & STATS
 ========================= */
 
-function saveToHistory(time, cycles) {
+function saveToHistory(entry) {
     const history = JSON.parse(localStorage.getItem("sleepHistory") || "[]");
-    history.push({
-        time,
-        cycles,
-        date: new Date().toLocaleDateString('fr-FR'),
-        timestamp: Date.now()
-    });
-
-    // Keep only last 20 entries
-    if (history.length > 20) history.shift();
-
+    history.push(entry);
+    if (history.length > 30) history.shift();
     localStorage.setItem("sleepHistory", JSON.stringify(history));
 }
 
@@ -163,22 +163,60 @@ function loadHistory() {
         return;
     }
 
-    container.innerHTML = history.reverse().map(item => `
-        <div class="history-item">
-            <span><strong>${item.date}</strong> — ${item.time}</span>
-            <span style="color: var(--text-dim)">${item.cycles} cycles</span>
+    container.innerHTML = history.slice().reverse().map(item => `
+        <div class="history-item-complex">
+            <div class="history-date">${item.date}</div>
+            <div class="history-details">
+                <span>${item.start} → ${item.end}</span>
+                <span class="history-cycles">${item.cycles} cycles</span>
+            </div>
+            <div class="history-duration">${Math.floor(item.duration / 60)}h ${item.duration % 60}m de sommeil</div>
         </div>
     `).join('');
+}
+
+function updateStats() {
+    const history = JSON.parse(localStorage.getItem("sleepHistory") || "[]");
+    const statsContent = document.getElementById("statsContent");
+
+    if (history.length === 0) {
+        statsContent.innerHTML = '<p class="subtitle">Enregistrez quelques nuits pour voir vos stats</p>';
+        return;
+    }
+
+    const avgDuration = history.reduce((acc, curr) => acc + curr.duration, 0) / history.length;
+    const avgCycles = history.reduce((acc, curr) => acc + curr.cycles, 0) / history.length;
+
+    statsContent.innerHTML = `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">${Math.floor(avgDuration / 60)}h ${Math.round(avgDuration % 60)}m</div>
+                <div class="stat-label">Moyenne Sommeil</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${avgCycles.toFixed(1)}</div>
+                <div class="stat-label">Moyenne Cycles</div>
+            </div>
+        </div>
+        <div class="stats-info">
+            Basé sur vos ${history.length} dernières nuits.
+        </div>
+    `;
 }
 
 function clearHistory() {
     if (confirm("Voulez-vous vraiment supprimer tout l'historique ?")) {
         localStorage.removeItem("sleepHistory");
         loadHistory();
+        updateStats();
     }
 }
 
 // Initialize
 window.addEventListener("load", () => {
-    // Default time 07:00 is already in HTML
+    const savedSession = localStorage.getItem("activeSession");
+    if (savedSession) {
+        currentSession = JSON.parse(savedSession);
+    }
+    updateSessionUI();
 });

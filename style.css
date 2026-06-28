@@ -24,7 +24,7 @@ body {
     color: var(--text-main);
     line-height: 1.5;
     overflow-x: hidden;
-    padding-bottom: 90px;
+    padding-bottom: 100px;
 }
 
 .app {
@@ -64,47 +64,50 @@ h1 {
     margin-bottom: 4px;
 }
 
+h2 {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
 .subtitle {
     font-size: 14px;
     color: var(--text-dim);
     margin-bottom: 24px;
 }
 
-h2 {
-    font-size: 22px;
-    margin-bottom: 16px;
+.info-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+}
+
+/* ================= ACTION BOX ================= */
+.action-box {
+    padding: 16px;
+    background: #1a1a1a;
+    border-radius: 20px;
+    border: 1px solid #262626;
 }
 
 /* ================= FORMS ================= */
 .input-group {
-    margin-bottom: 20px;
-}
-
-label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-    margin-left: 4px;
+    margin: 12px 0;
 }
 
 input[type="time"] {
     width: 100%;
-    padding: 16px;
-    border-radius: 16px;
+    padding: 14px;
+    border-radius: 12px;
     border: 2px solid #262626;
-    background: #1a1a1a;
+    background: #0a0a0a;
     color: #fff;
     font-size: 18px;
     font-weight: 600;
-    transition: border-color 0.2s;
-}
-
-input[type="time"]:focus {
-    outline: none;
-    border-color: var(--primary);
 }
 
 /* ================= BUTTONS ================= */
@@ -119,12 +122,6 @@ button {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    margin-top: 12px;
-}
-
-button:active {
-    transform: scale(0.98);
-    filter: brightness(0.9);
 }
 
 button.secondary {
@@ -132,19 +129,19 @@ button.secondary {
     color: var(--text-main);
 }
 
+.danger-btn {
+    background: var(--danger);
+    margin-top: 20px;
+}
+
 /* ================= TIMER ================= */
 .timer-container {
-    margin-top: 24px;
-    padding: 16px;
-    border-radius: 16px;
+    margin: 24px 0;
+    padding: 24px;
+    border-radius: 20px;
     background: rgba(99, 102, 241, 0.1);
     border: 1px dashed var(--primary);
     text-align: center;
-    display: none;
-}
-
-.timer-container.active {
-    display: block;
 }
 
 .timer-label {
@@ -152,11 +149,11 @@ button.secondary {
     color: var(--primary-light);
     text-transform: uppercase;
     font-weight: 600;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 }
 
 .timer {
-    font-size: 32px;
+    font-size: 42px;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
     color: var(--primary-light);
@@ -167,54 +164,58 @@ button.secondary {
     margin-top: 24px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .result {
-    padding: 16px;
-    border-radius: 16px;
+    padding: 14px;
+    border-radius: 14px;
     background: #1a1a1a;
     border: 1px solid #262626;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.2s;
 }
 
-.result:hover {
-    transform: translateX(4px);
-}
-
-.result-time {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.result-info {
-    font-size: 14px;
-    color: var(--text-dim);
-}
-
+.result-time { font-size: 18px; font-weight: 700; }
+.result-info { font-size: 13px; color: var(--text-dim); }
 .result.good { border-left: 4px solid var(--success); }
 .result.medium { border-left: 4px solid var(--warning); }
 .result.bad { border-left: 4px solid var(--danger); }
 
 /* ================= HISTORY ================= */
-#historyList {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 16px;
+.history-item-complex {
+    padding: 16px;
+    background: #1a1a1a;
+    border-radius: 16px;
+    border: 1px solid #262626;
+    margin-bottom: 12px;
 }
 
-.history-item {
-    padding: 12px 16px;
-    background: #1a1a1a;
-    border-radius: 12px;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
+.history-date { font-size: 12px; font-weight: 700; color: var(--primary-light); text-transform: uppercase; margin-bottom: 4px; }
+.history-details { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 4px; }
+.history-cycles { color: var(--success); }
+.history-duration { font-size: 13px; color: var(--text-dim); }
+
+/* ================= STATS ================= */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
 }
+
+.stat-card {
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid #262626;
+}
+
+.stat-value { font-size: 20px; font-weight: 800; color: var(--primary-light); }
+.stat-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; margin-top: 4px; }
+.stats-info { font-size: 12px; color: var(--text-dim); text-align: center; }
 
 /* ================= NAVBAR ================= */
 .navbar {
@@ -234,8 +235,6 @@ button.secondary {
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
-    padding: 0 10px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .navbar button {
@@ -244,13 +243,11 @@ button.secondary {
     width: 48px;
     height: 48px;
     padding: 0;
-    margin: 0;
+    color: var(--text-dim);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-dim);
-    border-radius: 50%;
-    transition: all 0.3s;
 }
 
 .navbar button.active {
@@ -258,12 +255,4 @@ button.secondary {
     background: rgba(99, 102, 241, 0.15);
 }
 
-.icon {
-    width: 24px;
-    height: 24px;
-    stroke-width: 2;
-}
-
-.nav-indicator {
-    display: none; /* Removed in favor of individual button backgrounds */
-}
+.icon { width: 24px; height: 24px; stroke-width: 2; }
