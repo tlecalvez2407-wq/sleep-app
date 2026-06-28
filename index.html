@@ -23,14 +23,14 @@
                 
                 <!-- Section Session Active -->
                 <div id="sessionActive" style="display: none;">
-                    <p class="subtitle">Sommeil en cours...</p>
+                    <p class="subtitle" id="sleepStatus">Sommeil en cours...</p>
                     <div class="timer-container active">
                         <p class="timer-label">Temps écoulé</p>
                         <div class="timer" id="liveTimer">0h 0m 0s</div>
                         <p class="result-info" style="margin-top: 10px;">Couché à <span id="sessionStartTime">--:--</span></p>
                     </div>
                     <button class="danger-btn" onclick="endSleepSession()">Je me réveille maintenant</button>
-                    <p class="info-text">Appuyez sur ce bouton dès que vous sortez du lit pour enregistrer votre nuit.</p>
+                    <p class="info-text">Note : Les 15 premières minutes sont comptées comme phase d'endormissement.</p>
                 </div>
 
                 <!-- Section Session Inactive -->
@@ -39,7 +39,7 @@
                     
                     <div class="action-box">
                         <h3>Sommeil immédiat</h3>
-                        <p class="info-text">Enregistrez votre nuit en temps réel pour des statistiques précises.</p>
+                        <p class="info-text">Enregistrez votre nuit en temps réel. La latence de 15min est déduite automatiquement.</p>
                         <button onclick="startSleepSession()">Démarrer ma nuit</button>
                     </div>
 
@@ -61,8 +61,36 @@
         <div id="statsView" class="view">
             <div class="card">
                 <h2>Statistiques</h2>
-                <div id="statsContent">
-                    <!-- Rempli par JS -->
+                <div id="statsContent"></div>
+            </div>
+        </div>
+
+        <!-- TIPS -->
+        <div id="tipsView" class="view">
+            <div class="card">
+                <h2>Conseils Sommeil</h2>
+                <p class="subtitle">Améliorez la qualité de votre repos</p>
+                
+                <div class="tips-container">
+                    <div class="tip-card">
+                        <h4>🔥 Quand il fait chaud</h4>
+                        <p>Prenez une douche tiède (pas froide) avant de dormir. Utilisez des draps en coton et hydratez-vous, mais évitez les boissons trop fraîches juste avant le coucher.</p>
+                    </div>
+                    
+                    <div class="tip-card">
+                        <h4>🧠 En cas de stress</h4>
+                        <p>Pratiquez la méthode 4-7-8 : inspirez 4s, bloquez 7s, expirez 8s. Écrivez vos pensées sur un papier pour "vider" votre cerveau avant d'éteindre la lumière.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h4>📱 Écrans et Lumière</h4>
+                        <p>Activez le filtre anti-lumière bleue 2h avant de dormir. L'idéal reste de poser le téléphone 30min avant le coucher pour laisser la mélatonine agir.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h4>☕ Alimentation</h4>
+                        <p>Évitez la caféine après 14h. Privilégiez un dîner léger et attendez au moins 2h entre la fin du repas et le coucher.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,11 +100,7 @@
             <div class="card">
                 <h2>Historique</h2>
                 <p class="subtitle">Vos sessions passées</p>
-                
-                <div id="historyList">
-                    <!-- Rempli par JS -->
-                </div>
-
+                <div id="historyList"></div>
                 <button class="secondary" style="margin-top: 24px;" onclick="clearHistory()">
                     Réinitialiser l'historique
                 </button>
@@ -87,21 +111,16 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <button id="nav-home" onclick="switchView('home')" class="active">
-            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor">
-                <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-
         <button id="nav-stats" onclick="switchView('stats')">
-            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-
+        <button id="nav-tips" onclick="switchView('tips')">
+            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.386l-.548-.547z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
         <button id="nav-history" onclick="switchView('history')">
-            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor">
-                <path d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor"><path d="M12 8v4l3 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
     </nav>
 
@@ -109,9 +128,7 @@
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
-                navigator.serviceWorker.register("service-worker.js")
-                    .then(reg => console.log("SW registered"))
-                    .catch(err => console.log("SW failed", err));
+                navigator.serviceWorker.register("service-worker.js");
             });
         }
     </script>

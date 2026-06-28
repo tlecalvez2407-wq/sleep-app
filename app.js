@@ -86,15 +86,17 @@ function endSleepSession() {
 
     const now = new Date();
     const endTime = now.getTime();
-    const durationMs = endTime - currentSession.startTime;
-    const durationMin = Math.floor(durationMs / 60000);
-    const cycles = parseFloat(((durationMin - FALL_ASLEEP_TIME) / CYCLE_DURATION).toFixed(1));
+    const totalDurationMin = Math.floor((endTime - currentSession.startTime) / 60000);
+    
+    // Effective sleep time = Total time - 15min latency
+    const effectiveSleepMin = Math.max(0, totalDurationMin - FALL_ASLEEP_TIME);
+    const cycles = parseFloat((effectiveSleepMin / CYCLE_DURATION).toFixed(1));
 
     saveToHistory({
         date: new Date(currentSession.startTime).toLocaleDateString('fr-FR'),
         start: currentSession.startTimeStr,
         end: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        duration: durationMin,
+        duration: effectiveSleepMin,
         cycles: cycles,
         timestamp: currentSession.startTime
     });
@@ -124,15 +126,28 @@ function updateSessionUI() {
 
 function startLiveTimer() {
     const timerDisplay = document.getElementById("liveTimer");
+    const statusDisplay = document.getElementById("sleepStatus");
     if (timerInterval) clearInterval(timerInterval);
 
     const update = () => {
         if (!currentSession) return;
         const diff = Date.now() - currentSession.startTime;
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        timerDisplay.innerText = `${h}h ${m}m ${s}s`;
+        const diffMin = Math.floor(diff / 60000);
+
+        if (diffMin < FALL_ASLEEP_TIME) {
+            statusDisplay.innerText = "Phase d'endormissement...";
+            statusDisplay.style.color = "var(--warning)";
+            const remaining = FALL_ASLEEP_TIME * 60 - Math.floor(diff / 1000);
+            timerDisplay.innerText = `${Math.floor(remaining / 60)}m ${remaining % 60}s`;
+        } else {
+            statusDisplay.innerText = "Sommeil effectif en cours";
+            statusDisplay.style.color = "var(--success)";
+            const sleepDiff = diff - (FALL_ASLEEP_TIME * 60000);
+            const h = Math.floor(sleepDiff / 3600000);
+            const m = Math.floor((sleepDiff % 3600000) / 60000);
+            const s = Math.floor((sleepDiff % 60000) / 1000);
+            timerDisplay.innerText = `${h}h ${m}m ${s}s`;
+        }
     };
 
     update();
@@ -170,7 +185,7 @@ function loadHistory() {
                 <span>${item.start} → ${item.end}</span>
                 <span class="history-cycles">${item.cycles} cycles</span>
             </div>
-            <div class="history-duration">${Math.floor(item.duration / 60)}h ${item.duration % 60}m de sommeil</div>
+            <div class="history-duration">${Math.floor(item.duration / 60)}h ${item.duration % 60}m de sommeil effectif</div>
         </div>
     `).join('');
 }
@@ -199,7 +214,7 @@ function updateStats() {
             </div>
         </div>
         <div class="stats-info">
-            Basé sur vos ${history.length} dernières nuits.
+            Basé sur vos ${history.length} dernières nuits (hors latence d'endormissement).
         </div>
     `;
 }
