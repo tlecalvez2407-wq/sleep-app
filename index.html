@@ -30,26 +30,34 @@
                         <p class="result-info" style="margin-top: 10px;">Couché à <span id="sessionStartTime">--:--</span></p>
                     </div>
                     <button class="danger-btn" onclick="endSleepSession()">Je me réveille maintenant</button>
-                    <p class="info-text">Note : Les 15 premières minutes sont comptées comme phase d'endormissement.</p>
                 </div>
 
                 <!-- Section Session Inactive -->
                 <div id="sessionInactive">
-                    <p class="subtitle">Prêt pour une bonne nuit ?</p>
+                    <p class="subtitle">Optimisez votre repos</p>
                     
+                    <!-- 1. Planifier mon réveil (ÉCHANGÉ) -->
                     <div class="action-box">
-                        <h3>Sommeil immédiat</h3>
-                        <p class="info-text">Enregistrez votre nuit en temps réel. La latence de 15min est déduite automatiquement.</p>
-                        <button onclick="startSleepSession()">Démarrer ma nuit</button>
-                    </div>
-
-                    <div class="action-box" style="margin-top: 24px;">
                         <h3>Planifier mon réveil</h3>
-                        <p class="info-text">Calculez l'heure idéale pour vous coucher selon votre réveil.</p>
+                        <p class="info-text">À quelle heure devez-vous être debout ?</p>
                         <div class="input-group">
                             <input type="time" id="wake" value="07:00">
                         </div>
-                        <button class="secondary" onclick="calc()">Calculer les cycles</button>
+                        <button onclick="calc()">Calculer l'heure du coucher</button>
+                        <button class="secondary" style="margin-top: 8px;" onclick="calcWakeNow()">Si je dors maintenant...</button>
+                    </div>
+
+                    <!-- 2. Sommeil immédiat (ÉCHANGÉ) -->
+                    <div class="action-box" style="margin-top: 24px;">
+                        <h3>Suivi en direct</h3>
+                        <p class="info-text">Enregistrez votre nuit pour des statistiques précises.</p>
+                        <button class="secondary" onclick="startSleepSession()">Démarrer ma nuit</button>
+                    </div>
+
+                    <!-- 3. Paramètres Latence -->
+                    <div class="latency-settings">
+                        <label>Temps d'endormissement : <span id="latencyVal">15</span> min</label>
+                        <input type="range" id="latencyInput" min="0" max="60" step="5" value="15" oninput="updateLatency(this.value)">
                     </div>
                 </div>
 
@@ -74,22 +82,32 @@
                 <div class="tips-container">
                     <div class="tip-card">
                         <h4>🔥 Quand il fait chaud</h4>
-                        <p>Prenez une douche tiède (pas froide) avant de dormir. Utilisez des draps en coton et hydratez-vous, mais évitez les boissons trop fraîches juste avant le coucher.</p>
+                        <p>Douche tiède avant de dormir, draps en coton et hydratation. Une astuce : placez votre taie d'oreiller au congélateur 15min avant le coucher !</p>
                     </div>
                     
                     <div class="tip-card">
                         <h4>🧠 En cas de stress</h4>
-                        <p>Pratiquez la méthode 4-7-8 : inspirez 4s, bloquez 7s, expirez 8s. Écrivez vos pensées sur un papier pour "vider" votre cerveau avant d'éteindre la lumière.</p>
+                        <p>Méthode 4-7-8 : inspirez 4s, bloquez 7s, expirez 8s. Notez vos soucis sur papier pour les "sortir" de votre tête.</p>
                     </div>
 
                     <div class="tip-card">
-                        <h4>📱 Écrans et Lumière</h4>
-                        <p>Activez le filtre anti-lumière bleue 2h avant de dormir. L'idéal reste de poser le téléphone 30min avant le coucher pour laisser la mélatonine agir.</p>
+                        <h4>🎧 Environnement bruyant</h4>
+                        <p>Utilisez des bruits blancs (pluie, vent) ou des bouchons d'oreilles en mousse. Le cerveau s'habitue aux bruits constants mais est réveillé par les pics sonores.</p>
                     </div>
 
                     <div class="tip-card">
-                        <h4>☕ Alimentation</h4>
-                        <p>Évitez la caféine après 14h. Privilégiez un dîner léger et attendez au moins 2h entre la fin du repas et le coucher.</p>
+                        <h4>🏃 Sport et Activité</h4>
+                        <p>Le sport favorise le sommeil profond, mais évitez les séances intensives moins de 3h avant de dormir car elles augmentent la température corporelle.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h4>🕒 La règle de la routine</h4>
+                        <p>Essayez de vous coucher et vous lever à la même heure, même le week-end. La régularité est plus importante que la durée totale pour votre horloge biologique.</p>
+                    </div>
+
+                    <div class="tip-card">
+                        <h4>📵 Déconnexion</h4>
+                        <p>La lumière bleue bloque la mélatonine. Si vous ne pouvez pas lâcher votre téléphone, activez le mode "Nuit" au maximum de sa chaleur chromatique.</p>
                     </div>
                 </div>
             </div>

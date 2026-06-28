@@ -3,7 +3,7 @@
  */
 
 const CYCLE_DURATION = 90; // minutes
-const FALL_ASLEEP_TIME = 15; // minutes
+let fallAsleepTime = parseInt(localStorage.getItem("fallAsleepTime")) || 15;
 
 let timerInterval = null;
 let currentSession = null;
@@ -26,9 +26,20 @@ function switchView(view) {
 }
 
 /* =========================
+   SETTINGS
+========================= */
+
+function updateLatency(val) {
+    fallAsleepTime = parseInt(val);
+    localStorage.setItem("fallAsleepTime", fallAsleepTime);
+    document.getElementById("latencyVal").innerText = fallAsleepTime;
+}
+
+/* =========================
    CALCULATIONS (PLANNING)
 ========================= */
 
+// Planifier mon réveil (Calculer quand se coucher)
 function calc() {
     const wakeInput = document.getElementById("wake").value;
     if (!wakeInput) return;
@@ -38,7 +49,7 @@ function calc() {
     resultsContainer.innerHTML = `<h3>Heures de coucher suggérées :</h3>`;
 
     [6, 5, 4, 3].forEach(cycles => {
-        const totalMinutes = cycles * CYCLE_DURATION + FALL_ASLEEP_TIME;
+        const totalMinutes = cycles * CYCLE_DURATION + fallAsleepTime;
         const wakeDate = new Date();
         wakeDate.setHours(hours, minutes, 0, 0);
         
@@ -47,18 +58,31 @@ function calc() {
         }
 
         const sleepDate = new Date(wakeDate.getTime() - totalMinutes * 60000);
-        renderResult(sleepDate, cycles, resultsContainer);
+        renderResult(sleepDate, cycles, resultsContainer, "Coucher à");
     });
 }
 
-function renderResult(date, cycles, container) {
+// Calculer mon réveil (Si je dors maintenant)
+function calcWakeNow() {
+    const resultsContainer = document.getElementById("results");
+    resultsContainer.innerHTML = `<h3>Heures de réveil suggérées :</h3>`;
+    const now = new Date();
+
+    [6, 5, 4, 3].forEach(cycles => {
+        const totalMinutes = cycles * CYCLE_DURATION + fallAsleepTime;
+        const wakeDate = new Date(now.getTime() + totalMinutes * 60000);
+        renderResult(wakeDate, cycles, resultsContainer, "Réveil à");
+    });
+}
+
+function renderResult(date, cycles, container, label) {
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const statusClass = cycles >= 5 ? "good" : (cycles === 4 ? "medium" : "bad");
 
     container.innerHTML += `
         <div class="result ${statusClass}">
             <div>
-                <div class="result-info">Coucher à</div>
+                <div class="result-info">${label}</div>
                 <div class="result-time">${timeStr}</div>
             </div>
             <div class="result-info">${cycles} cycles (${Math.floor(cycles * 1.5)}h)</div>
@@ -88,8 +112,7 @@ function endSleepSession() {
     const endTime = now.getTime();
     const totalDurationMin = Math.floor((endTime - currentSession.startTime) / 60000);
     
-    // Effective sleep time = Total time - 15min latency
-    const effectiveSleepMin = Math.max(0, totalDurationMin - FALL_ASLEEP_TIME);
+    const effectiveSleepMin = Math.max(0, totalDurationMin - fallAsleepTime);
     const cycles = parseFloat((effectiveSleepMin / CYCLE_DURATION).toFixed(1));
 
     saveToHistory({
@@ -134,15 +157,15 @@ function startLiveTimer() {
         const diff = Date.now() - currentSession.startTime;
         const diffMin = Math.floor(diff / 60000);
 
-        if (diffMin < FALL_ASLEEP_TIME) {
+        if (diffMin < fallAsleepTime) {
             statusDisplay.innerText = "Phase d'endormissement...";
             statusDisplay.style.color = "var(--warning)";
-            const remaining = FALL_ASLEEP_TIME * 60 - Math.floor(diff / 1000);
+            const remaining = fallAsleepTime * 60 - Math.floor(diff / 1000);
             timerDisplay.innerText = `${Math.floor(remaining / 60)}m ${remaining % 60}s`;
         } else {
             statusDisplay.innerText = "Sommeil effectif en cours";
             statusDisplay.style.color = "var(--success)";
-            const sleepDiff = diff - (FALL_ASLEEP_TIME * 60000);
+            const sleepDiff = diff - (fallAsleepTime * 60000);
             const h = Math.floor(sleepDiff / 3600000);
             const m = Math.floor((sleepDiff % 3600000) / 60000);
             const s = Math.floor((sleepDiff % 60000) / 1000);
@@ -214,7 +237,7 @@ function updateStats() {
             </div>
         </div>
         <div class="stats-info">
-            Basé sur vos ${history.length} dernières nuits (hors latence d'endormissement).
+            Basé sur vos ${history.length} dernières nuits (latence de ${fallAsleepTime}min exclue).
         </div>
     `;
 }
@@ -233,5 +256,7 @@ window.addEventListener("load", () => {
     if (savedSession) {
         currentSession = JSON.parse(savedSession);
     }
+    document.getElementById("latencyInput").value = fallAsleepTime;
+    document.getElementById("latencyVal").innerText = fallAsleepTime;
     updateSessionUI();
 });
