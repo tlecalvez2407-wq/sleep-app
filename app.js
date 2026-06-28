@@ -1,341 +1,184 @@
-console.log("APP VERSION HISTORIQUE");
-const cycle = 90;
-const latency = 15;
+/**
+ * Sleep Cycle App - Core Logic
+ */
+
+const CYCLE_DURATION = 90; // minutes
+const FALL_ASLEEP_TIME = 15; // minutes
 
 let targetTime = null;
 let timerInterval = null;
 
 /* =========================
-   HISTORIQUE
-========================= */
-
-function loadHistory(){
-
-    const history = JSON.parse(
-        localStorage.getItem("sleepHistory") || "[]"
-    );
-
-    const container = document.getElementById("historyList");
-
-    if(!container) return;
-
-    if(history.length === 0){
-        container.innerHTML = "<p>Aucune nuit enregistrée</p>";
-        return;
-    }
-
-    container.innerHTML = "";
-
-    history.slice().reverse().forEach(item => {
-
-        container.innerHTML += `
-        <div class="result ${item.class}">
-            ${item.time}
-            — ${item.cycles} cycles
-        </div>
-        `;
-
-    });
-}
-
-console.log("Sauvegarde historique");
-function saveHistory(time, cycles, cls){
-
-    const history = JSON.parse(
-        localStorage.getItem("sleepHistory") || "[]"
-    );
-
-    history.push({
-        time,
-        cycles,
-        class: cls,
-        date: Date.now()
-    });
-
-    localStorage.setItem(
-        "sleepHistory",
-        JSON.stringify(history)
-    );
-
-    loadHistory();
-}
-
-/* =========================
    NAVIGATION
 ========================= */
 
-function switchView(view){
+function switchView(view) {
+    // Update views
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    const targetView = document.getElementById(view + "View");
+    if (targetView) targetView.classList.add("active");
 
-    document.querySelectorAll(".view").forEach(v=>{
-        v.classList.remove("active");
-    });
+    // Update nav buttons
+    document.querySelectorAll(".navbar button").forEach(btn => btn.classList.remove("active"));
+    const targetNav = document.getElementById("nav-" + view);
+    if (targetNav) targetNav.classList.add("active");
 
-    document
-    .getElementById(view + "View")
-    .classList.add("active");
-
-    document.querySelectorAll(".navbar button")
-    .forEach(btn=>{
-        btn.classList.remove("active");
-    });
-
-    if(view==="home"){
-        document.querySelectorAll(".navbar button")[0]
-        .classList.add("active");
-    }
-
-    if(view==="stats"){
-        document.querySelectorAll(".navbar button")[1]
-        .classList.add("active");
-    }
-
-    if(view==="history"){
-        document.querySelectorAll(".navbar button")[2]
-        .classList.add("active");
-    }
-
-    moveIndicator(view);
-
-    if(view==="history"){
-        loadHistory();
-    }
+    // Load data if needed
+    if (view === "history") loadHistory();
 }
 
 /* =========================
-   INDICATEUR
+   CALCULATIONS
 ========================= */
 
-function moveIndicator(view){
+function calc() {
+    stopTimer();
+    const wakeInput = document.getElementById("wake").value;
+    if (!wakeInput) return;
 
-    const ind =
-    document.querySelector(".nav-indicator");
+    const [hours, minutes] = wakeInput.split(":").map(Number);
+    const resultsContainer = document.getElementById("results");
+    resultsContainer.innerHTML = "";
 
-    if(!ind) return;
+    // Calculate sleep times for 6, 5, 4, 3 cycles
+    [6, 5, 4, 3].forEach(cycles => {
+        const totalMinutes = cycles * CYCLE_DURATION + FALL_ASLEEP_TIME;
+        const wakeDate = new Date();
+        wakeDate.setHours(hours, minutes, 0, 0);
+        
+        // If wake time is earlier than now, assume it's for tomorrow
+        if (wakeDate < new Date()) {
+            wakeDate.setDate(wakeDate.getDate() + 1);
+        }
 
-    if(view==="home"){
-        ind.style.transform="translateX(0%)";
-    }
+        const sleepDate = new Date(wakeDate.getTime() - totalMinutes * 60000);
+        renderResult(sleepDate, cycles, resultsContainer);
+    });
+}
 
-    if(view==="stats"){
-        ind.style.transform="translateX(100%)";
-    }
+function sleepNow() {
+    stopTimer();
+    const now = new Date();
+    const resultsContainer = document.getElementById("results");
+    resultsContainer.innerHTML = "";
 
-    if(view==="history"){
-        ind.style.transform="translateX(200%)";
-    }
+    // Calculate wake times for 6, 5, 4, 3 cycles
+    [6, 5, 4, 3].forEach((cycles, index) => {
+        const totalMinutes = cycles * CYCLE_DURATION + FALL_ASLEEP_TIME;
+        const wakeDate = new Date(now.getTime() + totalMinutes * 60000);
+        
+        renderResult(wakeDate, cycles, resultsContainer, true);
+
+        // Set the timer for the most optimal cycle (6 cycles)
+        if (cycles === 6) {
+            targetTime = wakeDate;
+            saveToHistory(wakeDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }), cycles);
+        }
+    });
+
+    startTimer();
+}
+
+function renderResult(date, cycles, container, isWakeTime = false) {
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const statusClass = cycles >= 5 ? "good" : (cycles === 4 ? "medium" : "bad");
+    const label = isWakeTime ? "Réveil à" : "Coucher à";
+
+    container.innerHTML += `
+        <div class="result ${statusClass}">
+            <div>
+                <div class="result-info">${label}</div>
+                <div class="result-time">${timeStr}</div>
+            </div>
+            <div class="result-info">${cycles} cycles (${Math.floor(cycles * 1.5)}h)</div>
+        </div>
+    `;
 }
 
 /* =========================
    TIMER
 ========================= */
 
-function clearTimer(){
+function startTimer() {
+    const container = document.getElementById("timerContainer");
+    const display = document.getElementById("timer");
+    
+    if (!targetTime) return;
+    container.classList.add("active");
 
-    targetTime = null;
+    if (timerInterval) clearInterval(timerInterval);
 
-    document.getElementById("timer").innerText = "";
+    const update = () => {
+        const now = new Date();
+        const diff = targetTime - now;
 
-    if(timerInterval){
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-}
-
-/* =========================
-   CALCUL HEURES
-========================= */
-
-function calc(){
-
-    clearTimer();
-
-    const wake =
-    document.getElementById("wake").value;
-
-    if(!wake) return;
-
-    const [h,m] =
-    wake.split(":").map(Number);
-
-    const res =
-    document.getElementById("results");
-
-    res.innerHTML = "";
-
-    [6,5,4,3].forEach(c=>{
-
-        const total =
-        c * (cycle + latency);
-
-        const d = new Date();
-
-        d.setHours(h,m);
-
-        const sleep =
-        new Date(d.getTime() - total*60000);
-
-        const hours =
-        sleep.getHours()
-        .toString()
-        .padStart(2,"0");
-
-        const minutes =
-        sleep.getMinutes()
-        .toString()
-        .padStart(2,"0");
-
-        const time =
-        `${hours}:${minutes}`;
-
-        const cls =
-        c >= 5 ? "good"
-        : c === 4 ? "medium"
-        : "bad";
-
-        res.innerHTML += `
-        <div class="result ${cls}">
-            ${time}
-            — ${c} cycles
-        </div>
-        `;
-    });
-}
-
-/* =========================
-   JE VAIS DORMIR
-========================= */
-
-function sleepNow(){
-
-    clearTimer();
-
-    const now = new Date();
-
-    const res =
-    document.getElementById("results");
-
-    res.innerHTML = "";
-
-    [6,5,4,3].forEach((c,i)=>{
-
-        const t =
-        new Date(
-            now.getTime() +
-            c*(cycle+latency)*60000
-        );
-
-        const hours =
-        t.getHours()
-        .toString()
-        .padStart(2,"0");
-
-        const minutes =
-        t.getMinutes()
-        .toString()
-        .padStart(2,"0");
-
-        const time =
-        `${hours}:${minutes}`;
-
-        const cls =
-        c >= 5 ? "good"
-        : c === 4 ? "medium"
-        : "bad";
-
-        res.innerHTML += `
-        <div class="result ${cls}">
-            ${time}
-            — ${c} cycles
-        </div>
-        `;
-
-        if(c === 6){
-            saveHistory(
-                time,
-                c,
-                cls
-            );
-        }
-
-        if(i === 1){
-            targetTime = t;
-        }
-
-    });
-
-    startTimer();
-}
-
-/* =========================
-   TIMER LIVE
-========================= */
-
-function startTimer(){
-
-    if(timerInterval){
-        clearInterval(timerInterval);
-    }
-
-    timerInterval =
-    setInterval(()=>{
-
-        if(!targetTime) return;
-
-        const diff =
-        targetTime - new Date();
-
-        if(diff <= 0){
-
-            document.getElementById("timer")
-            .innerText =
-            "🔥 C'est l'heure";
-
+        if (diff <= 0) {
+            display.innerText = "C'est l'heure !";
+            clearInterval(timerInterval);
             return;
         }
 
-        const h =
-        Math.floor(diff/3600000);
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
 
-        const m =
-        Math.floor(
-            diff%3600000/60000
-        );
+        display.innerText = `${h}h ${m}m ${s}s`;
+    };
 
-        const s =
-        Math.floor(
-            diff%60000/1000
-        );
+    update();
+    timerInterval = setInterval(update, 1000);
+}
 
-        document.getElementById("timer")
-        .innerText =
-        `${h}h ${m}m ${s}s`;
-
-    },1000);
+function stopTimer() {
+    targetTime = null;
+    if (timerInterval) clearInterval(timerInterval);
+    document.getElementById("timerContainer").classList.remove("active");
 }
 
 /* =========================
-   INIT
+   HISTORY
 ========================= */
 
-window.addEventListener("load", ()=>{
+function saveToHistory(time, cycles) {
+    const history = JSON.parse(localStorage.getItem("sleepHistory") || "[]");
+    history.push({
+        time,
+        cycles,
+        date: new Date().toLocaleDateString('fr-FR'),
+        timestamp: Date.now()
+    });
 
-    const firstButton =
-    document.querySelector(".navbar button");
+    // Keep only last 20 entries
+    if (history.length > 20) history.shift();
 
-    if(firstButton){
-        firstButton.classList.add("active");
-    }
+    localStorage.setItem("sleepHistory", JSON.stringify(history));
+}
 
-    loadHistory();
-});
-
-function clearHistory(){
-
-    if(!confirm("Supprimer tout l'historique ?")){
+function loadHistory() {
+    const history = JSON.parse(localStorage.getItem("sleepHistory") || "[]");
+    const container = document.getElementById("historyList");
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-dim); padding: 20px;">Aucune nuit enregistrée</p>';
         return;
     }
 
-    localStorage.removeItem("sleepHistory");
-
-    loadHistory();
+    container.innerHTML = history.reverse().map(item => `
+        <div class="history-item">
+            <span><strong>${item.date}</strong> — ${item.time}</span>
+            <span style="color: var(--text-dim)">${item.cycles} cycles</span>
+        </div>
+    `).join('');
 }
+
+function clearHistory() {
+    if (confirm("Voulez-vous vraiment supprimer tout l'historique ?")) {
+        localStorage.removeItem("sleepHistory");
+        loadHistory();
+    }
+}
+
+// Initialize
+window.addEventListener("load", () => {
+    // Default time 07:00 is already in HTML
+});
