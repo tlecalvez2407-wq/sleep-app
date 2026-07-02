@@ -9,6 +9,28 @@ let timerInterval = null;
 let currentSession = null;
 
 /* =========================
+   UTILITIES
+========================= */
+
+/**
+ * Formate une durée en minutes en chaîne "Xh Ym"
+ */
+function formatDuration(minutes) {
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m.toString().padStart(2, '0')}m`;
+}
+
+/**
+ * Arrondi les cycles au 0.5 le plus proche pour une lecture simplifiée
+ */
+function roundCycles(cycles) {
+    return Math.round(cycles * 2) / 2;
+}
+
+/* =========================
    NAVIGATION
 ========================= */
 
@@ -21,8 +43,13 @@ function switchView(view) {
     const targetNav = document.getElementById("nav-" + view);
     if (targetNav) targetNav.classList.add("active");
 
+    // Dynamic loading
     if (view === "history") loadHistory();
     if (view === "stats") updateStats();
+    if (view === "tips") {
+        // Logique pour rendre les tips dynamiques si besoin plus tard
+        console.log("Tips view loaded");
+    }
 }
 
 /* =========================
@@ -39,7 +66,6 @@ function updateLatency(val) {
    CALCULATIONS (PLANNING)
 ========================= */
 
-// Planifier mon réveil (Calculer quand se coucher)
 function calc() {
     const wakeInput = document.getElementById("wake").value;
     if (!wakeInput) return;
@@ -49,7 +75,7 @@ function calc() {
     resultsContainer.innerHTML = `<h3>Heures de coucher suggérées :</h3>`;
 
     [6, 5, 4, 3].forEach(cycles => {
-        const totalMinutes = cycles * CYCLE_DURATION + fallAsleepTime;
+        const totalMinutesAtBed = cycles * CYCLE_DURATION + fallAsleepTime;
         const wakeDate = new Date();
         wakeDate.setHours(hours, minutes, 0, 0);
         
@@ -57,20 +83,19 @@ function calc() {
             wakeDate.setDate(wakeDate.getDate() + 1);
         }
 
-        const sleepDate = new Date(wakeDate.getTime() - totalMinutes * 60000);
+        const sleepDate = new Date(wakeDate.getTime() - totalMinutesAtBed * 60000);
         renderResult(sleepDate, cycles, resultsContainer, "Coucher à");
     });
 }
 
-// Calculer mon réveil (Si je dors maintenant)
 function calcWakeNow() {
     const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = `<h3>Heures de réveil suggérées :</h3>`;
     const now = new Date();
 
     [6, 5, 4, 3].forEach(cycles => {
-        const totalMinutes = cycles * CYCLE_DURATION + fallAsleepTime;
-        const wakeDate = new Date(now.getTime() + totalMinutes * 60000);
+        const totalMinutesAtBed = cycles * CYCLE_DURATION + fallAsleepTime;
+        const wakeDate = new Date(now.getTime() + totalMinutesAtBed * 60000);
         renderResult(wakeDate, cycles, resultsContainer, "Réveil à");
     });
 }
@@ -78,6 +103,7 @@ function calcWakeNow() {
 function renderResult(date, cycles, container, label) {
     const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     const statusClass = cycles >= 5 ? "good" : (cycles === 4 ? "medium" : "bad");
+    const sleepEffectiveMin = cycles * CYCLE_DURATION;
 
     container.innerHTML += `
         <div class="result ${statusClass}">
@@ -85,7 +111,10 @@ function renderResult(date, cycles, container, label) {
                 <div class="result-info">${label}</div>
                 <div class="result-time">${timeStr}</div>
             </div>
-            <div class="result-info">${cycles} cycles (${Math.floor(cycles * 1.5)}h)</div>
+            <div style="text-align: right">
+                <div class="result-info">${cycles} cycles</div>
+                <div class="result-info" style="font-size: 11px">Sommeil : ${formatDuration(sleepEffectiveMin)}</div>
+            </div>
         </div>
     `;
 }
@@ -107,6 +136,7 @@ function startSleepSession() {
 
 function cancelSleepSession() {
     if (confirm("Voulez-vous annuler cette session ? Elle ne sera pas enregistrée.")) {
+        stopLiveTimer();
         currentSession = null;
         localStorage.removeItem("activeSession");
         updateSessionUI();
@@ -121,17 +151,19 @@ function endSleepSession() {
     const totalDurationMin = Math.floor((endTime - currentSession.startTime) / 60000);
     
     const effectiveSleepMin = Math.max(0, totalDurationMin - fallAsleepTime);
-    const cycles = parseFloat((effectiveSleepMin / CYCLE_DURATION).toFixed(1));
+    const cyclesRaw = effectiveSleepMin / CYCLE_DURATION;
+    const cyclesRounded = roundCycles(cyclesRaw);
 
     saveToHistory({
         date: new Date(currentSession.startTime).toLocaleDateString('fr-FR'),
         start: currentSession.startTimeStr,
         end: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
         duration: effectiveSleepMin,
-        cycles: cycles,
+        cycles: cyclesRounded,
         timestamp: currentSession.startTime
     });
 
+    stopLiveTimer();
     currentSession = null;
     localStorage.removeItem("activeSession");
     updateSessionUI();
@@ -186,7 +218,10 @@ function startLiveTimer() {
 }
 
 function stopLiveTimer() {
-    if (timerInterval) clearInterval(timerInterval);
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 }
 
 /* =========================
@@ -216,7 +251,7 @@ function loadHistory() {
                 <span>${item.start} → ${item.end}</span>
                 <span class="history-cycles">${item.cycles} cycles</span>
             </div>
-            <div class="history-duration">${Math.floor(item.duration / 60)}h ${item.duration % 60}m de sommeil effectif</div>
+            <div class="history-duration">Sommeil effectif : ${formatDuration(item.duration)}</div>
         </div>
     `).join('');
 }
@@ -230,22 +265,35 @@ function updateStats() {
         return;
     }
 
-    const avgDuration = history.reduce((acc, curr) => acc + curr.duration, 0) / history.length;
+    const totalDuration = history.reduce((acc, curr) => acc + curr.duration, 0);
+    const avgDuration = totalDuration / history.length;
     const avgCycles = history.reduce((acc, curr) => acc + curr.cycles, 0) / history.length;
+    const bestNight = Math.max(...history.map(h => h.duration));
 
     statsContent.innerHTML = `
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value">${Math.floor(avgDuration / 60)}h ${Math.round(avgDuration % 60)}m</div>
+                <div class="stat-value">${formatDuration(avgDuration)}</div>
                 <div class="stat-label">Moyenne Sommeil</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${avgCycles.toFixed(1)}</div>
                 <div class="stat-label">Moyenne Cycles</div>
             </div>
+            <div class="stat-card">
+                <div class="stat-value">${formatDuration(bestNight)}</div>
+                <div class="stat-label">Meilleure Nuit</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${history.length}</div>
+                <div class="stat-label">Nuits suivies</div>
+            </div>
         </div>
-        <div class="stats-info">
-            Basé sur vos ${history.length} dernières nuits (latence de ${fallAsleepTime}min exclue).
+        <div class="stats-info" style="margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px;">
+            <p><strong>Temps total de sommeil :</strong> ${formatDuration(totalDuration)}</p>
+            <p style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">
+                Les statistiques excluent votre temps d'endormissement personnalisé (${fallAsleepTime}min).
+            </p>
         </div>
     `;
 }
