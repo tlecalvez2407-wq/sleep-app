@@ -23,21 +23,35 @@
                 
                 <!-- Section Session Active -->
                 <div id="sessionActive" style="display: none;">
-                    <p class="subtitle" id="sleepStatus">Sommeil en cours...</p>
-                    <div class="timer-container active">
-                        <p class="timer-label">Temps écoulé</p>
-                        <div class="timer" id="liveTimer">0h 0m 0s</div>
-                        <p class="result-info" style="margin-top: 10px;">Couché à <span id="sessionStartTime">--:--</span></p>
+                    
+                    <div id="liveTimerContainer">
+                        <p class="subtitle" id="sleepStatus">Sommeil en cours...</p>
+                        <div class="timer-container active">
+                            <p class="timer-label">Temps écoulé</p>
+                            <div class="timer" id="liveTimer">0h 0m 0s</div>
+                            <p class="result-info" style="margin-top: 10px;">Couché à <span id="sessionStartTime">--:--</span></p>
+                        </div>
+                        <button class="danger-btn" onclick="endSleepSession()">Je me réveille maintenant</button>
+                        <button class="secondary" style="margin-top: 12px;" onclick="cancelSleepSession()">Annuler la session</button>
                     </div>
-                    <button class="danger-btn" onclick="endSleepSession()">Je me réveille maintenant</button>
-                    <button class="secondary" style="margin-top: 12px;" onclick="cancelSleepSession()">Annuler la session</button>
+
+                    <!-- Feedback au réveil -->
+                    <div id="wakeUpFeedback" style="display: none; text-align: center; animation: fadeIn 0.3s ease;">
+                        <h3>Comment vous sentez-vous ?</h3>
+                        <p class="subtitle">Votre ressenti impacte votre score de sommeil</p>
+                        <div class="mood-selector">
+                            <button onclick="confirmWakeUp('😴')">😴<span>Fatigué</span></button>
+                            <button onclick="confirmWakeUp('😐')">😐<span>Moyen</span></button>
+                            <button onclick="confirmWakeUp('🙂')">🙂<span>Bien</span></button>
+                            <button onclick="confirmWakeUp('🔥')">🔥<span>En forme</span></button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Section Session Inactive -->
                 <div id="sessionInactive">
                     <p class="subtitle">Optimisez votre repos</p>
                     
-                    <!-- 1. Planifier mon réveil -->
                     <div class="action-box">
                         <h3>Planifier mon réveil</h3>
                         <p class="info-text">À quelle heure devez-vous être debout ?</p>
@@ -47,18 +61,15 @@
                         <button onclick="calc()">Calculer l'heure du coucher</button>
                         <button class="secondary" style="margin-top: 8px;" onclick="calcWakeNow()">Si je dors maintenant...</button>
                         
-                        <!-- RÉSULTATS DÉPLACÉS ICI -->
                         <div id="results"></div>
                     </div>
 
-                    <!-- 2. Suivi en direct -->
                     <div class="action-box" style="margin-top: 24px;">
                         <h3>Suivi en direct</h3>
                         <p class="info-text">Enregistrez votre nuit pour des statistiques précises.</p>
                         <button class="secondary" onclick="startSleepSession()">Démarrer ma nuit</button>
                     </div>
 
-                    <!-- 3. Paramètres Latence -->
                     <div class="latency-settings">
                         <label>Temps d'endormissement : <span id="latencyVal">15</span> min</label>
                         <input type="range" id="latencyInput" min="0" max="60" step="5" value="15" oninput="updateLatency(this.value)">

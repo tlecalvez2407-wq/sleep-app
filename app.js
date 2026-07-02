@@ -12,9 +12,6 @@ let currentSession = null;
    UTILITIES
 ========================= */
 
-/**
- * Formate une durée en minutes en chaîne "Xh Ym"
- */
 function formatDuration(minutes) {
     const h = Math.floor(minutes / 60);
     const m = Math.round(minutes % 60);
@@ -23,11 +20,30 @@ function formatDuration(minutes) {
     return `${h}h ${m.toString().padStart(2, '0')}m`;
 }
 
-/**
- * Arrondi les cycles au 0.5 le plus proche pour une lecture simplifiée
- */
 function roundCycles(cycles) {
     return Math.round(cycles * 2) / 2;
+}
+
+/**
+ * Calcule un score de sommeil sur 100
+ */
+function calculateSleepScore(durationMin, cycles) {
+    let score = 0;
+    
+    // 1. Basé sur la durée (Cible 7h30 - 9h soit 450-540 min)
+    if (durationMin >= 450 && durationMin <= 540) score += 60;
+    else if (durationMin > 540) score += 45; // Trop dormi
+    else if (durationMin >= 360) score += 40; // 6h+
+    else score += 20; // Trop court
+
+    // 2. Basé sur les cycles (Cible 5 ou 6)
+    const rounded = roundCycles(cycles);
+    if (rounded === 5 || rounded === 6) score += 40;
+    else if (rounded === 4) score += 25;
+    else if (rounded > 6) score += 30;
+    else score += 10;
+
+    return Math.min(100, score);
 }
 
 /* =========================
@@ -43,13 +59,8 @@ function switchView(view) {
     const targetNav = document.getElementById("nav-" + view);
     if (targetNav) targetNav.classList.add("active");
 
-    // Dynamic loading
     if (view === "history") loadHistory();
     if (view === "stats") updateStats();
-    if (view === "tips") {
-        // Logique pour rendre les tips dynamiques si besoin plus tard
-        console.log("Tips view loaded");
-    }
 }
 
 /* =========================
@@ -145,7 +156,13 @@ function cancelSleepSession() {
 
 function endSleepSession() {
     if (!currentSession) return;
+    
+    // On affiche le sélecteur de ressenti
+    document.getElementById("wakeUpFeedback").style.display = "block";
+    document.getElementById("liveTimerContainer").style.display = "none";
+}
 
+function confirmWakeUp(mood) {
     const now = new Date();
     const endTime = now.getTime();
     const totalDurationMin = Math.floor((endTime - currentSession.startTime) / 60000);
@@ -153,6 +170,13 @@ function endSleepSession() {
     const effectiveSleepMin = Math.max(0, totalDurationMin - fallAsleepTime);
     const cyclesRaw = effectiveSleepMin / CYCLE_DURATION;
     const cyclesRounded = roundCycles(cyclesRaw);
+    
+    // Calcul du score
+    let score = calculateSleepScore(effectiveSleepMin, cyclesRounded);
+    
+    // Ajustement du score selon le mood
+    if (mood === "🔥") score = Math.min(100, score + 10);
+    if (mood === "😴") score = Math.max(0, score - 15);
 
     saveToHistory({
         date: new Date(currentSession.startTime).toLocaleDateString('fr-FR'),
@@ -160,12 +184,19 @@ function endSleepSession() {
         end: now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
         duration: effectiveSleepMin,
         cycles: cyclesRounded,
+        score: score,
+        mood: mood,
         timestamp: currentSession.startTime
     });
 
     stopLiveTimer();
     currentSession = null;
     localStorage.removeItem("activeSession");
+    
+    // Reset UI feedback
+    document.getElementById("wakeUpFeedback").style.display = "none";
+    document.getElementById("liveTimerContainer").style.display = "block";
+    
     updateSessionUI();
     switchView('history');
 }
@@ -244,16 +275,27 @@ function loadHistory() {
         return;
     }
 
-    container.innerHTML = history.slice().reverse().map(item => `
-        <div class="history-item-complex">
-            <div class="history-date">${item.date}</div>
-            <div class="history-details">
-                <span>${item.start} → ${item.end}</span>
-                <span class="history-cycles">${item.cycles} cycles</span>
+    container.innerHTML = history.slice().reverse().map(item => {
+        const badgeClass = item.score >= 80 ? "good" : (item.score >= 50 ? "medium" : "bad");
+        const badgeLabel = item.score >= 80 ? "Excellent" : (item.score >= 50 ? "Correct" : "Court");
+        
+        return `
+            <div class="history-item-complex ${badgeClass}">
+                <div class="history-header">
+                    <span class="history-date">${item.date}</span>
+                    <span class="score-badge ${badgeClass}">${item.score}/100</span>
+                </div>
+                <div class="history-details">
+                    <span>${item.start} → ${item.end} ${item.mood || ''}</span>
+                    <span class="history-cycles">${item.cycles} cycles</span>
+                </div>
+                <div class="history-footer">
+                    <span>${formatDuration(item.duration)} de sommeil</span>
+                    <span class="quality-label">${badgeLabel}</span>
+                </div>
             </div>
-            <div class="history-duration">Sommeil effectif : ${formatDuration(item.duration)}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 function updateStats() {
@@ -268,10 +310,22 @@ function updateStats() {
     const totalDuration = history.reduce((acc, curr) => acc + curr.duration, 0);
     const avgDuration = totalDuration / history.length;
     const avgCycles = history.reduce((acc, curr) => acc + curr.cycles, 0) / history.length;
+    const avgScore = history.reduce((acc, curr) => acc + (curr.score || 0), 0) / history.length;
     const bestNight = Math.max(...history.map(h => h.duration));
+    const worstNight = Math.min(...history.map(h => h.duration));
+
+    // Résumé intelligent
+    let insight = "";
+    if (avgDuration >= 450) insight = "Vous dormez en moyenne plus de 7h30, ce qui est excellent pour votre récupération.";
+    else if (avgDuration >= 360) insight = "Votre moyenne de sommeil est correcte, mais essayez de viser 5 cycles (7h30) plus souvent.";
+    else insight = "Vos nuits sont courtes en moyenne. Essayez de vous coucher 30min plus tôt ce soir.";
 
     statsContent.innerHTML = `
         <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">${Math.round(avgScore)}</div>
+                <div class="stat-label">Score Moyen</div>
+            </div>
             <div class="stat-card">
                 <div class="stat-value">${formatDuration(avgDuration)}</div>
                 <div class="stat-label">Moyenne Sommeil</div>
@@ -284,16 +338,17 @@ function updateStats() {
                 <div class="stat-value">${formatDuration(bestNight)}</div>
                 <div class="stat-label">Meilleure Nuit</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-value">${history.length}</div>
-                <div class="stat-label">Nuits suivies</div>
-            </div>
         </div>
-        <div class="stats-info" style="margin-top: 20px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px;">
-            <p><strong>Temps total de sommeil :</strong> ${formatDuration(totalDuration)}</p>
-            <p style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">
-                Les statistiques excluent votre temps d'endormissement personnalisé (${fallAsleepTime}min).
-            </p>
+        
+        <div class="stats-insight">
+            <h4>Résumé intelligent</h4>
+            <p>${insight}</p>
+        </div>
+
+        <div class="stats-info">
+            <p><strong>Pire nuit :</strong> ${formatDuration(worstNight)}</p>
+            <p><strong>Temps total suivi :</strong> ${formatDuration(totalDuration)}</p>
+            <p><strong>Nuits enregistrées :</strong> ${history.length}</p>
         </div>
     `;
 }
