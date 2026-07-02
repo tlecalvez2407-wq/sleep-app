@@ -30,13 +30,14 @@
                         <p class="result-info" style="margin-top: 10px;">Couché à <span id="sessionStartTime">--:--</span></p>
                     </div>
                     <button class="danger-btn" onclick="endSleepSession()">Je me réveille maintenant</button>
+                    <button class="secondary" style="margin-top: 12px;" onclick="cancelSleepSession()">Annuler la session</button>
                 </div>
 
                 <!-- Section Session Inactive -->
                 <div id="sessionInactive">
                     <p class="subtitle">Optimisez votre repos</p>
                     
-                    <!-- 1. Planifier mon réveil (ÉCHANGÉ) -->
+                    <!-- 1. Planifier mon réveil -->
                     <div class="action-box">
                         <h3>Planifier mon réveil</h3>
                         <p class="info-text">À quelle heure devez-vous être debout ?</p>
@@ -45,9 +46,12 @@
                         </div>
                         <button onclick="calc()">Calculer l'heure du coucher</button>
                         <button class="secondary" style="margin-top: 8px;" onclick="calcWakeNow()">Si je dors maintenant...</button>
+                        
+                        <!-- RÉSULTATS DÉPLACÉS ICI -->
+                        <div id="results"></div>
                     </div>
 
-                    <!-- 2. Sommeil immédiat (ÉCHANGÉ) -->
+                    <!-- 2. Suivi en direct -->
                     <div class="action-box" style="margin-top: 24px;">
                         <h3>Suivi en direct</h3>
                         <p class="info-text">Enregistrez votre nuit pour des statistiques précises.</p>
@@ -60,8 +64,6 @@
                         <input type="range" id="latencyInput" min="0" max="60" step="5" value="15" oninput="updateLatency(this.value)">
                     </div>
                 </div>
-
-                <div id="results"></div>
             </div>
         </div>
 

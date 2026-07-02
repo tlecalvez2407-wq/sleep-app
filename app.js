@@ -105,6 +105,14 @@ function startSleepSession() {
     updateSessionUI();
 }
 
+function cancelSleepSession() {
+    if (confirm("Voulez-vous annuler cette session ? Elle ne sera pas enregistrée.")) {
+        currentSession = null;
+        localStorage.removeItem("activeSession");
+        updateSessionUI();
+    }
+}
+
 function endSleepSession() {
     if (!currentSession) return;
 
@@ -256,7 +264,10 @@ window.addEventListener("load", () => {
     if (savedSession) {
         currentSession = JSON.parse(savedSession);
     }
-    document.getElementById("latencyInput").value = fallAsleepTime;
-    document.getElementById("latencyVal").innerText = fallAsleepTime;
+    const latencyInput = document.getElementById("latencyInput");
+    if(latencyInput) {
+        latencyInput.value = fallAsleepTime;
+        document.getElementById("latencyVal").innerText = fallAsleepTime;
+    }
     updateSessionUI();
 });
