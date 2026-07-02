@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sleep-cycle-v2';
+const CACHE_NAME = 'sleep-cycle-v3'; // Version augmentée pour forcer la mise à jour
 const ASSETS = [
   './',
   './index.html',
@@ -32,23 +32,19 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch Event (Stale-while-revalidate strategy)
+// Fetch Event (Network-first strategy for better reliability during updates)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.match(event.request).then(response => {
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          // Only cache successful GET requests
-          if (event.request.method === 'GET' && networkResponse.status === 200) {
-            cache.put(event.request, networkResponse.clone());
-          }
-          return networkResponse;
-        }).catch(() => {
-            // Fallback if network fails
-            return response;
-        });
-        return response || fetchPromise;
-      });
-    })
+    fetch(event.request)
+      .then(networkResponse => {
+        if (event.request.method === 'GET' && networkResponse.status === 200) {
+          const cacheCopy = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, cacheCopy));
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
