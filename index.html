@@ -155,7 +155,34 @@
         </button>
     </nav>
 
+    <!-- DEBUG PANEL -->
+    <div id="debugPanel" class="card" style="display:none; position:fixed; top:50px; left:20px; right:20px; z-index:9999; border: 2px solid var(--primary); background: #000;">
+        <h3>Mode Développeur</h3>
+        <p class="subtitle">Simuler des données de test</p>
+        
+        <div class="action-box" style="margin-bottom: 10px;">
+            <label>Coucher : <input type="time" id="debugStart" value="23:00"></label><br>
+            <label>Réveil : <input type="time" id="debugEnd" value="07:30"></label><br>
+            <label>Ressenti : 
+                <select id="debugMood">
+                    <option value="🙂">Bien</option>
+                    <option value="🔥">En forme</option>
+                    <option value="😐">Moyen</option>
+                    <option value="😴">Fatigué</option>
+                </select>
+            </label>
+            <button onclick="DebugMode.simulateNight(document.getElementById('debugStart').value, document.getElementById('debugEnd').value, document.getElementById('debugMood').value)" style="margin-top:10px;">
+                Ajouter cette nuit
+            </button>
+        </div>
+
+        <button class="secondary" onclick="DebugMode.generateWeek()">Générer 1 semaine aléatoire</button>
+        <button class="danger-btn" onclick="clearHistory(); DebugMode.togglePanel();" style="margin-top:10px;">Vider tout</button>
+        <button class="secondary" onclick="DebugMode.togglePanel()" style="margin-top:10px;">Fermer</button>
+    </div>
+
     <script src="app.js"></script>
+    <script src="debug.js"></script>
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
