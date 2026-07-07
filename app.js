@@ -4,9 +4,11 @@
 
 const CYCLE_DURATION = 90; // minutes
 let fallAsleepTime = parseInt(localStorage.getItem("fallAsleepTime")) || 15;
+let notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
 
 let timerInterval = null;
 let currentSession = null;
+let scheduledReminders = []; // Pour garder trace des timeouts
 
 /* =========================
    UTILITIES
@@ -24,19 +26,13 @@ function roundCycles(cycles) {
     return Math.round(cycles * 2) / 2;
 }
 
-/**
- * Calcule un score de sommeil sur 100
- */
 function calculateSleepScore(durationMin, cycles) {
     let score = 0;
-    
-    // 1. Basé sur la durée (Cible 7h30 - 9h soit 450-540 min)
     if (durationMin >= 450 && durationMin <= 540) score += 60;
-    else if (durationMin > 540) score += 45; // Trop dormi
-    else if (durationMin >= 360) score += 40; // 6h+
-    else score += 20; // Trop court
+    else if (durationMin > 540) score += 45;
+    else if (durationMin >= 360) score += 40;
+    else score += 20;
 
-    // 2. Basé sur les cycles (Cible 5 ou 6)
     const rounded = roundCycles(cycles);
     if (rounded === 5 || rounded === 6) score += 40;
     else if (rounded === 4) score += 25;
@@ -44,6 +40,92 @@ function calculateSleepScore(durationMin, cycles) {
     else score += 10;
 
     return Math.min(100, score);
+}
+
+/* =========================
+   NOTIFICATIONS SYSTEM
+========================= */
+
+async function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        alert("Ce navigateur ne supporte pas les notifications.");
+        return false;
+    }
+
+    let permission = await Notification.requestPermission();
+    if (permission === "granted") {
+        notificationsEnabled = true;
+        localStorage.setItem("notificationsEnabled", "true");
+        updateNotificationUI();
+        showNotification("Notifications activées !", { body: "Vous recevrez désormais vos rappels de sommeil." });
+        return true;
+    } else {
+        notificationsEnabled = false;
+        localStorage.setItem("notificationsEnabled", "false");
+        updateNotificationUI();
+        return false;
+    }
+}
+
+function toggleNotifications() {
+    if (!notificationsEnabled) {
+        requestNotificationPermission();
+    } else {
+        notificationsEnabled = false;
+        localStorage.setItem("notificationsEnabled", "false");
+        updateNotificationUI();
+        cancelAllNotifications();
+    }
+}
+
+function updateNotificationUI() {
+    const btn = document.getElementById("notifToggleBtn");
+    if (btn) {
+        btn.innerText = notificationsEnabled ? "Désactiver les rappels" : "Activer les rappels";
+        btn.className = notificationsEnabled ? "secondary" : "primary";
+    }
+}
+
+function showNotification(title, options = {}) {
+    if (!notificationsEnabled || Notification.permission !== "granted") return;
+
+    const defaultOptions = {
+        icon: './icons/icon-192.png',
+        badge: './icons/icon-192.png',
+        vibrate: [200, 100, 200]
+    };
+
+    if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SCHEDULE_NOTIFICATION',
+            title: title,
+            options: { ...defaultOptions, ...options },
+            delay: 0
+        });
+    } else {
+        new Notification(title, { ...defaultOptions, ...options });
+    }
+}
+
+function scheduleNotification(title, body, date) {
+    if (!notificationsEnabled || Notification.permission !== "granted") return;
+
+    const now = new Date().getTime();
+    const target = date.getTime();
+    const delay = target - now;
+
+    if (delay <= 0) return;
+
+    const timeoutId = setTimeout(() => {
+        showNotification(title, { body: body });
+    }, delay);
+
+    scheduledReminders.push(timeoutId);
+}
+
+function cancelAllNotifications() {
+    scheduledReminders.forEach(id => clearTimeout(id));
+    scheduledReminders = [];
 }
 
 /* =========================
@@ -85,6 +167,8 @@ function calc() {
     const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = `<h3>Heures de coucher suggérées :</h3>`;
 
+    cancelAllNotifications(); // Reset les anciens rappels
+
     [6, 5, 4, 3].forEach(cycles => {
         const totalMinutesAtBed = cycles * CYCLE_DURATION + fallAsleepTime;
         const wakeDate = new Date();
@@ -96,6 +180,16 @@ function calc() {
 
         const sleepDate = new Date(wakeDate.getTime() - totalMinutesAtBed * 60000);
         renderResult(sleepDate, cycles, resultsContainer, "Coucher à");
+
+        // Programmer un rappel 5 minutes avant l'heure de coucher idéale (ex: 5 cycles)
+        if (cycles === 5 && notificationsEnabled) {
+            const reminderDate = new Date(sleepDate.getTime() - 5 * 60000);
+            scheduleNotification(
+                "Il est presque l'heure !", 
+                `Préparez-vous à dormir dans 5 minutes pour vos 5 cycles (${formatDuration(cycles * 90)}).`,
+                reminderDate
+            );
+        }
     });
 }
 
@@ -143,11 +237,22 @@ function startSleepSession() {
     
     localStorage.setItem("activeSession", JSON.stringify(currentSession));
     updateSessionUI();
+
+    // Notification de rappel au bout de 8h par défaut si on oublie
+    if (notificationsEnabled) {
+        const eightHoursLater = new Date(now.getTime() + 8 * 3600000);
+        scheduleNotification(
+            "Bonjour !", 
+            "Votre session de sommeil est toujours active. N'oubliez pas de l'enregistrer.",
+            eightHoursLater
+        );
+    }
 }
 
 function cancelSleepSession() {
     if (confirm("Voulez-vous annuler cette session ? Elle ne sera pas enregistrée.")) {
         stopLiveTimer();
+        cancelAllNotifications();
         currentSession = null;
         localStorage.removeItem("activeSession");
         updateSessionUI();
@@ -156,25 +261,20 @@ function cancelSleepSession() {
 
 function endSleepSession() {
     if (!currentSession) return;
-    
-    // On affiche le sélecteur de ressenti
     document.getElementById("wakeUpFeedback").style.display = "block";
     document.getElementById("liveTimerContainer").style.display = "none";
+    cancelAllNotifications();
 }
 
 function confirmWakeUp(mood) {
     const now = new Date();
     const endTime = now.getTime();
     const totalDurationMin = Math.floor((endTime - currentSession.startTime) / 60000);
-    
     const effectiveSleepMin = Math.max(0, totalDurationMin - fallAsleepTime);
     const cyclesRaw = effectiveSleepMin / CYCLE_DURATION;
     const cyclesRounded = roundCycles(cyclesRaw);
     
-    // Calcul du score
     let score = calculateSleepScore(effectiveSleepMin, cyclesRounded);
-    
-    // Ajustement du score selon le mood
     if (mood === "🔥") score = Math.min(100, score + 10);
     if (mood === "😴") score = Math.max(0, score - 15);
 
@@ -192,11 +292,8 @@ function confirmWakeUp(mood) {
     stopLiveTimer();
     currentSession = null;
     localStorage.removeItem("activeSession");
-    
-    // Reset UI feedback
     document.getElementById("wakeUpFeedback").style.display = "none";
     document.getElementById("liveTimerContainer").style.display = "block";
-    
     updateSessionUI();
     switchView('history');
 }
@@ -314,7 +411,6 @@ function updateStats() {
     const bestNight = Math.max(...history.map(h => h.duration));
     const worstNight = Math.min(...history.map(h => h.duration));
 
-    // Résumé intelligent
     let insight = "";
     if (avgDuration >= 450) insight = "Vous dormez en moyenne plus de 7h30, ce qui est excellent pour votre récupération.";
     else if (avgDuration >= 360) insight = "Votre moyenne de sommeil est correcte, mais essayez de viser 5 cycles (7h30) plus souvent.";
@@ -372,5 +468,6 @@ window.addEventListener("load", () => {
         latencyInput.value = fallAsleepTime;
         document.getElementById("latencyVal").innerText = fallAsleepTime;
     }
+    updateNotificationUI();
     updateSessionUI();
 });
