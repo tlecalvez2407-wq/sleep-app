@@ -1,6 +1,6 @@
 /**
  * Sleep Cycle App - Debug Mode
- * Permet de simuler des sessions de sommeil pour tester l'UI et les Stats.
+ * Permet de simuler des sessions de sommeil et de tester les notifications.
  */
 
 const DebugMode = {
@@ -48,21 +48,47 @@ const DebugMode = {
         for (let i = 7; i > 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            
-            // Heure de coucher entre 22:00 et 00:30
             const startH = 22 + Math.floor(Math.random() * 3);
             const startM = Math.floor(Math.random() * 60);
-            
-            // Durée entre 6h et 9h
             const sleepDurationH = 6 + Math.random() * 3;
             const end = new Date(date.getTime() + (startH * 3600000) + (startM * 60000) + (sleepDurationH * 3600000));
-            
             const startStr = `${startH.toString().padStart(2, '0')}:${startM.toString().padStart(2, '0')}`;
             const endStr = `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`;
             const mood = moods[Math.floor(Math.random() * moods.length)];
-            
             this.simulateNight(startStr, endStr, mood);
         }
+    },
+
+    /* =========================
+       NOTIFICATION DEBUG TOOLS
+    ========================= */
+
+    checkNotifStatus: function() {
+        const status = {
+            supported: ("Notification" in window),
+            permission: Notification.permission,
+            swActive: !!navigator.serviceWorker.controller,
+            localStorage: localStorage.getItem("notificationsEnabled")
+        };
+        alert(`Diagnostic Notifications :\n- Supporté : ${status.supported}\n- Permission : ${status.permission}\n- SW Actif : ${status.swActive}\n- Config App : ${status.localStorage}`);
+        console.log("Full Notif Status:", status);
+    },
+
+    testNotifNow: function() {
+        if (Notification.permission !== "granted") {
+            alert("Erreur : La permission n'est pas accordée. Cliquez sur 'Demander Permission' d'abord.");
+            return;
+        }
+        alert("Notification de test programmée dans 3 secondes. Verrouillez votre écran pour tester en arrière-plan !");
+        setTimeout(() => {
+            showNotification("Test Debug 🚀", { body: "Ceci est une notification de test immédiate." });
+        }, 3000);
+    },
+
+    forceRequestPermission: function() {
+        requestNotificationPermission().then(res => {
+            alert("Résultat de la demande : " + (res ? "Accordé" : "Refusé/Annulé"));
+        });
     },
 
     togglePanel: function() {

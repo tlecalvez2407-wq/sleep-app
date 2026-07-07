@@ -185,6 +185,14 @@
         </div>
 
         <button class="secondary" onclick="DebugMode.generateWeek()">Générer 1 semaine aléatoire</button>
+        
+        <div class="action-box" style="margin-top: 15px; border-color: var(--warning);">
+            <p style="font-size: 11px; color: var(--warning); margin-bottom: 8px;">Tests Notifications</p>
+            <button class="secondary" style="font-size: 12px; padding: 8px; margin-bottom: 5px;" onclick="DebugMode.checkNotifStatus()">1. Diagnostic Statut</button>
+            <button class="secondary" style="font-size: 12px; padding: 8px; margin-bottom: 5px;" onclick="DebugMode.forceRequestPermission()">2. Demander Permission</button>
+            <button class="secondary" style="font-size: 12px; padding: 8px;" onclick="DebugMode.testNotifNow()">3. Test Notification (3s)</button>
+        </div>
+
         <button class="danger-btn" onclick="clearHistory(); DebugMode.togglePanel();" style="margin-top:10px;">Vider tout</button>
         <button class="secondary" onclick="DebugMode.togglePanel()" style="margin-top:10px;">Fermer</button>
     </div>
