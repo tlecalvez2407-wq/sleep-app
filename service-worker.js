@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sleep-cycle-v4'; // Nouvelle version
+const CACHE_NAME = 'sleep-cycle-v5'; // Nouvelle version
 const ASSETS = [
   './',
   './index.html',
