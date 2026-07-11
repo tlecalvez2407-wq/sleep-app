@@ -61,7 +61,6 @@
                         <button onclick="calc()">Calculer l'heure du coucher</button>
                         <button class="secondary" style="margin-top: 8px;" onclick="calcWakeNow()">Si je dors maintenant...</button>
                         
-                        <!-- 3. Paramètres Latence (DÉPLACÉ ICI) -->
                         <div class="latency-settings" style="margin-top: 20px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.05);">
                             <label>Temps d'endormissement : <span id="latencyVal">15</span> min</label>
                             <input type="range" id="latencyInput" min="0" max="60" step="5" value="15" oninput="updateLatency(this.value)">
@@ -76,7 +75,6 @@
                         <button class="secondary" onclick="startSleepSession()">Démarrer ma nuit</button>
                     </div>
 
-                    <!-- 4. Notifications -->
                     <div class="action-box" style="margin-top: 24px;">
                         <h3>Notifications</h3>
                         <p class="info-text">Recevez des rappels pour vos cycles de sommeil.</p>
@@ -94,7 +92,7 @@
             </div>
         </div>
 
-        <!-- HISTORY (INVERSÉ AVEC TIPS) -->
+        <!-- HISTORY -->
         <div id="historyView" class="view">
             <div class="card">
                 <h2>Historique</h2>
@@ -106,7 +104,7 @@
             </div>
         </div>
 
-        <!-- TIPS (INVERSÉ AVEC HISTORY) -->
+        <!-- TIPS -->
         <div id="tipsView" class="view">
             <div class="card">
                 <h2>Conseils Sommeil</h2>
@@ -125,7 +123,7 @@
 
                     <div class="tip-card">
                         <h4>🎧 Environnement bruyant</h4>
-                        <p>Si votre chambre est bruyante, utilisez des <b>bruit blancs</b> (sons de pluie, vent ou ventilateur) pour masquer les bruits soudains qui vous réveillent. Les bouchons d'oreilles en mousse restent la solution la plus efficace pour un calme total.</p>
+                        <p>Si votre chambre est bruyante, utilisez des bruits blancs (sons de pluie, vent ou ventilateur) pour masquer les bruits soudains qui vous réveillent. Les bouchons d'oreilles en mousse restent la solution la plus efficace pour un calme total.</p>
                     </div>
 
                     <div class="tip-card">
@@ -140,14 +138,14 @@
 
                     <div class="tip-card">
                         <h4>📵 Déconnexion</h4>
-                        <p>Si vous ne pouvez pas lâcher votre téléphone avant de dormir, activez le <b>filtre de lumière bleue</b> (mode Nuit) au moins 1h avant le coucher. Réglez-le sur une température de couleur chaude (orangée) pour limiter l'impact sur votre endormissement.</p>
+                        <p>Si vous ne pouvez pas lâcher votre téléphone avant de dormir, activez le filtre de lumière bleue (mode Nuit) au moins 1h avant le coucher. Réglez-le sur une température de couleur chaude (orangée) pour limiter l'impact sur votre endormissement.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- NAVBAR (INVERSÉ) -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <button id="nav-home" onclick="switchView('home')" class="active">
             <svg viewBox="0 0 24 24" class="icon" fill="none" stroke="currentColor"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -163,42 +161,7 @@
         </button>
     </nav>
 
-    <!-- DEBUG PANEL -->
-    <div id="debugPanel" class="card" style="display:none; position:fixed; top:50px; left:20px; right:20px; z-index:9999; border: 2px solid var(--primary); background: #000;">
-        <h3>Mode Développeur</h3>
-        <p class="subtitle">Simuler des données de test</p>
-        
-        <div class="action-box" style="margin-bottom: 10px;">
-            <label>Coucher : <input type="time" id="debugStart" value="23:00"></label><br>
-            <label>Réveil : <input type="time" id="debugEnd" value="07:30"></label><br>
-            <label>Ressenti : 
-                <select id="debugMood">
-                    <option value="🙂">Bien</option>
-                    <option value="🔥">En forme</option>
-                    <option value="😐">Moyen</option>
-                    <option value="😴">Fatigué</option>
-                </select>
-            </label>
-            <button onclick="DebugMode.simulateNight(document.getElementById('debugStart').value, document.getElementById('debugEnd').value, document.getElementById('debugMood').value)" style="margin-top:10px;">
-                Ajouter cette nuit
-            </button>
-        </div>
-
-        <button class="secondary" onclick="DebugMode.generateWeek()">Générer 1 semaine aléatoire</button>
-        
-        <div class="action-box" style="margin-top: 15px; border-color: var(--warning);">
-            <p style="font-size: 11px; color: var(--warning); margin-bottom: 8px;">Tests Notifications</p>
-            <button class="secondary" style="font-size: 12px; padding: 8px; margin-bottom: 5px;" onclick="DebugMode.checkNotifStatus()">1. Diagnostic Statut</button>
-            <button class="secondary" style="font-size: 12px; padding: 8px; margin-bottom: 5px;" onclick="DebugMode.forceRequestPermission()">2. Demander Permission</button>
-            <button class="secondary" style="font-size: 12px; padding: 8px;" onclick="DebugMode.testNotifNow()">3. Test Notification (3s)</button>
-        </div>
-
-        <button class="danger-btn" onclick="clearHistory(); DebugMode.togglePanel();" style="margin-top:10px;">Vider tout</button>
-        <button class="secondary" onclick="DebugMode.togglePanel()" style="margin-top:10px;">Fermer</button>
-    </div>
-
     <script src="app.js"></script>
-    <script src="debug.js"></script>
     <script>
         if ("serviceWorker" in navigator) {
             window.addEventListener("load", () => {
