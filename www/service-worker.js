@@ -1,12 +1,12 @@
-const CACHE_NAME = 'sleep-cycle-v5'; // Nouvelle version
+const CACHE_NAME = 'sleep-cycle-v6';
 const ASSETS = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './debug.js',
   './manifest.json',
-  './icons/icon-192.png'
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install Event
@@ -46,42 +46,5 @@ self.addEventListener('fetch', event => {
       .catch(() => {
         return caches.match(event.request);
       })
-  );
-});
-
-/* =========================
-   NOTIFICATIONS LOGIC
-========================= */
-
-// Écouter les messages venant de l'app (pour programmer des notifications)
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SCHEDULE_NOTIFICATION') {
-    const { title, options, delay } = event.data;
-    
-    // On utilise setTimeout dans le SW (attention, le SW peut s'endormir)
-    // Pour une version de production plus robuste, on utiliserait l'API Push ou Background Sync
-    setTimeout(() => {
-      self.registration.showNotification(title, options);
-    }, delay);
-  }
-});
-
-// Gérer le clic sur la notification
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      if (clientList.length > 0) {
-        let client = clientList[0];
-        for (let i = 0; i < clientList.length; i++) {
-          if (clientList[i].focused) {
-            client = clientList[i];
-          }
-        }
-        return client.focus();
-      }
-      return clients.openWindow('./');
-    })
   );
 });

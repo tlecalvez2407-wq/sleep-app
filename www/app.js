@@ -1,14 +1,16 @@
 /**
  * Sleep Cycle App - Core Logic
  */
+const CYCLE_DURATION = 90;
 
-const CYCLE_DURATION = 90; // minutes
+const LocalNotifications = window.Capacitor ? window.Capacitor.Plugins.LocalNotifications : null;
+const NativeSettings = window.Capacitor ? window.Capacitor.Plugins.NativeSettings : null;
+
 let fallAsleepTime = parseInt(localStorage.getItem("fallAsleepTime")) || 15;
 let notificationsEnabled = localStorage.getItem("notificationsEnabled") === "true";
 
 let timerInterval = null;
 let currentSession = null;
-let scheduledReminders = []; // Pour garder trace des timeouts
 
 /* =========================
    UTILITIES
@@ -47,23 +49,36 @@ function calculateSleepScore(durationMin, cycles) {
 ========================= */
 
 async function requestNotificationPermission() {
-    if (!("Notification" in window)) {
-        alert("Ce navigateur ne supporte pas les notifications.");
-        return false;
-    }
+    if (!LocalNotifications) return alert("Notifications non supportées ici.");
 
-    let permission = await Notification.requestPermission();
-    if (permission === "granted") {
-        notificationsEnabled = true;
-        localStorage.setItem("notificationsEnabled", "true");
-        updateNotificationUI();
-        showNotification("Notifications activées !", { body: "Vous recevrez désormais vos rappels de sommeil." });
-        return true;
-    } else {
-        notificationsEnabled = false;
-        localStorage.setItem("notificationsEnabled", "false");
-        updateNotificationUI();
-        return false;
+    try {
+        const permission = await LocalNotifications.requestPermissions();
+        
+        if (permission.display === "granted") {
+            notificationsEnabled = true;
+            localStorage.setItem("notificationsEnabled", "true");
+            updateNotificationUI();
+            
+            if (window.Capacitor && window.Capacitor.getPlatform() === 'android') {
+                if (NativeSettings) {
+                    alert("IMPORTANT : Pour que le réveil sonne même appli fermée, sur l'écran qui va s'ouvrir :\n\n1. Cliquez sur 'Batterie'\n2. Choisissez 'Non restreinte' (ou Désactiver l'optimisation).");
+                    
+                    await NativeSettings.openAndroid({
+                        option: "application_details" 
+                    });
+                }
+            } else {
+                alert("Notifications activées ✅");
+            }
+
+        } else {
+            notificationsEnabled = false;
+            localStorage.setItem("notificationsEnabled", "false");
+            alert("Permission native refusée");
+        }
+    } catch(error) {
+        console.error("Erreur permission :", error);
+        alert("Erreur permission : " + error);
     }
 }
 
@@ -86,46 +101,30 @@ function updateNotificationUI() {
     }
 }
 
-function showNotification(title, options = {}) {
-    if (!notificationsEnabled || Notification.permission !== "granted") return;
+async function scheduleNotification(title, body, date) {
+    if (!LocalNotifications) return;
 
-    const defaultOptions = {
-        icon: './icons/icon-192.png',
-        badge: './icons/icon-192.png',
-        vibrate: [200, 100, 200]
-    };
-
-    if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-            type: 'SCHEDULE_NOTIFICATION',
-            title: title,
-            options: { ...defaultOptions, ...options },
-            delay: 0
-        });
-    } else {
-        new Notification(title, { ...defaultOptions, ...options });
-    }
+    await LocalNotifications.schedule({
+        notifications: [
+            {
+                id: Math.floor(Date.now() / 1000) % 2147483647,
+                title: title,
+                body: body,
+                channelId: "sleep-reminders",
+                schedule: {
+                    at: date,
+                    allowWhileIdle: true
+                }
+            }
+        ]
+    });
 }
 
-function scheduleNotification(title, body, date) {
-    if (!notificationsEnabled || Notification.permission !== "granted") return;
-
-    const now = new Date().getTime();
-    const target = date.getTime();
-    const delay = target - now;
-
-    if (delay <= 0) return;
-
-    const timeoutId = setTimeout(() => {
-        showNotification(title, { body: body });
-    }, delay);
-
-    scheduledReminders.push(timeoutId);
-}
-
-function cancelAllNotifications() {
-    scheduledReminders.forEach(id => clearTimeout(id));
-    scheduledReminders = [];
+async function cancelAllNotifications() {
+    if (!LocalNotifications) return;
+    await LocalNotifications.cancel({
+        notifications: []
+    });
 }
 
 /* =========================
@@ -167,30 +166,30 @@ function calc() {
     const resultsContainer = document.getElementById("results");
     resultsContainer.innerHTML = `<h3>Heures de coucher suggérées :</h3>`;
 
-    cancelAllNotifications(); // Reset les anciens rappels
+    cancelAllNotifications();
 
     [6, 5, 4, 3].forEach(cycles => {
-        const totalMinutesAtBed = cycles * CYCLE_DURATION + fallAsleepTime;
-        const wakeDate = new Date();
-        wakeDate.setHours(hours, minutes, 0, 0);
-        
-        if (wakeDate < new Date()) {
-            wakeDate.setDate(wakeDate.getDate() + 1);
-        }
+    const totalMinutesAtBed = cycles * CYCLE_DURATION + fallAsleepTime;
+    const wakeDate = new Date();
+    wakeDate.setHours(hours, minutes, 0, 0);
+    
+    if (wakeDate < new Date()) {
+        wakeDate.setDate(wakeDate.getDate() + 1);
+    }
 
-        const sleepDate = new Date(wakeDate.getTime() - totalMinutesAtBed * 60000);
-        renderResult(sleepDate, cycles, resultsContainer, "Coucher à");
+    const sleepDate = new Date(wakeDate.getTime() - totalMinutesAtBed * 60000);
+    renderResult(sleepDate, cycles, resultsContainer, "Coucher à");
 
-        // Programmer un rappel 5 minutes avant l'heure de coucher idéale (ex: 5 cycles)
-        if (cycles === 5 && notificationsEnabled) {
-            const reminderDate = new Date(sleepDate.getTime() - 5 * 60000);
-            scheduleNotification(
-                "Il est presque l'heure !", 
-                `Préparez-vous à dormir dans 5 minutes pour vos 5 cycles (${formatDuration(cycles * 90)}).`,
-                reminderDate
-            );
-        }
-    });
+    if (cycles === 5 && notificationsEnabled) {
+        const reminderDate = new Date(sleepDate.getTime() - 5 * 60000);
+
+        scheduleNotification(
+            "Il est presque l'heure !",
+            `Préparez-vous à dormir pour vos 5 cycles (${formatDuration(cycles * 90)}).`,
+            reminderDate
+        );
+    }
+  });
 }
 
 function calcWakeNow() {
@@ -238,7 +237,6 @@ function startSleepSession() {
     localStorage.setItem("activeSession", JSON.stringify(currentSession));
     updateSessionUI();
 
-    // Notification de rappel au bout de 8h par défaut si on oublie
     if (notificationsEnabled) {
         const eightHoursLater = new Date(now.getTime() + 8 * 3600000);
         scheduleNotification(
@@ -411,11 +409,6 @@ function updateStats() {
     const bestNight = Math.max(...history.map(h => h.duration));
     const worstNight = Math.min(...history.map(h => h.duration));
 
-    let insight = "";
-    if (avgDuration >= 450) insight = "Vous dormez en moyenne plus de 7h30, ce qui est excellent pour votre récupération.";
-    else if (avgDuration >= 360) insight = "Votre moyenne de sommeil est correcte, mais essayez de viser 5 cycles (7h30) plus souvent.";
-    else insight = "Vos nuits sont courtes en moyenne. Essayez de vous coucher 30min plus tôt ce soir.";
-
     statsContent.innerHTML = `
         <div class="stats-grid">
             <div class="stat-card">
@@ -435,17 +428,6 @@ function updateStats() {
                 <div class="stat-label">Meilleure Nuit</div>
             </div>
         </div>
-        
-        <div class="stats-insight">
-            <h4>Résumé intelligent</h4>
-            <p>${insight}</p>
-        </div>
-
-        <div class="stats-info">
-            <p><strong>Pire nuit :</strong> ${formatDuration(worstNight)}</p>
-            <p><strong>Temps total suivi :</strong> ${formatDuration(totalDuration)}</p>
-            <p><strong>Nuits enregistrées :</strong> ${history.length}</p>
-        </div>
     `;
 }
 
@@ -457,17 +439,21 @@ function clearHistory() {
     }
 }
 
-// Initialize
-window.addEventListener("load", () => {
+window.addEventListener("load", async () => {
+    if (LocalNotifications) {
+        await LocalNotifications.createChannel({
+            id: "sleep-reminders",
+            name: "Rappels sommeil",
+            description: "Notifications pour les rappels de sommeil",
+            importance: 5
+        });
+    }
+
     const savedSession = localStorage.getItem("activeSession");
     if (savedSession) {
         currentSession = JSON.parse(savedSession);
     }
-    const latencyInput = document.getElementById("latencyInput");
-    if(latencyInput) {
-        latencyInput.value = fallAsleepTime;
-        document.getElementById("latencyVal").innerText = fallAsleepTime;
-    }
+
     updateNotificationUI();
     updateSessionUI();
 });
